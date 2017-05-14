@@ -39,8 +39,10 @@ import android.support.wearable.watchface.WatchFaceStyle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
+
 import com.example.android.wearable.watchface.R;
 import com.example.android.wearable.watchface.config.AnalogComplicationConfigRecyclerViewAdapter;
+
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -51,14 +53,19 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
 
     // Unique IDs for each complication. The settings activity that supports allowing users
     // to select their complication data provider requires numbers to be >= 0.
-    public static final int LEFT_COMPLICATION_ID = 0;
-    public static final int RIGHT_COMPLICATION_ID = 1;
+    private static final int BACKGROUND_COMPLICATION_ID = 0;
 
-    // Left and right complication IDs as array for Complication API.
-    public static final int[] COMPLICATION_IDS = {LEFT_COMPLICATION_ID, RIGHT_COMPLICATION_ID};
+    private static final int LEFT_COMPLICATION_ID = 100;
+    private static final int RIGHT_COMPLICATION_ID = 101;
+
+    // Background, Left and right complication IDs as array for Complication API.
+    private static final int[] COMPLICATION_IDS = {
+        BACKGROUND_COMPLICATION_ID, LEFT_COMPLICATION_ID, RIGHT_COMPLICATION_ID
+    };
 
     // Left and right dial supported types.
-    public static final int[][] COMPLICATION_SUPPORTED_TYPES = {
+    private static final int[][] COMPLICATION_SUPPORTED_TYPES = {
+        {ComplicationData.TYPE_LARGE_IMAGE},
         {
             ComplicationData.TYPE_RANGED_VALUE,
             ComplicationData.TYPE_ICON,
@@ -79,6 +86,8 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
             AnalogComplicationConfigRecyclerViewAdapter.ComplicationLocation complicationLocation) {
         // Add any other supported locations here.
         switch (complicationLocation) {
+            case BACKGROUND:
+                return BACKGROUND_COMPLICATION_ID;
             case LEFT:
                 return LEFT_COMPLICATION_ID;
             case RIGHT:
@@ -94,10 +103,12 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
             AnalogComplicationConfigRecyclerViewAdapter.ComplicationLocation complicationLocation) {
         // Add any other supported locations here.
         switch (complicationLocation) {
-            case LEFT:
+            case BACKGROUND:
                 return COMPLICATION_SUPPORTED_TYPES[0];
-            case RIGHT:
+            case LEFT:
                 return COMPLICATION_SUPPORTED_TYPES[1];
+            case RIGHT:
+                return COMPLICATION_SUPPORTED_TYPES[2];
             default:
                 return new int[] {};
         }
@@ -149,10 +160,6 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
         private Paint mTickAndCirclePaint;
 
         private Paint mBackgroundPaint;
-
-        /* TODO (jewalker): code to be reused with followup CL for complication Background image.
-        private Bitmap mBackgroundBitmap;
-        private Bitmap mGrayBackgroundBitmap;*/
 
         /* Maps active complication ids to the data for that complication. Note: Data will only be
          * present if the user has chosen a provider via the settings activity for the watch face.
@@ -227,8 +234,7 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
                             .build());
 
             loadSavedPreferences();
-            initializeBackground();
-            initializeComplication();
+            initializeComplicationsAndBackground();
             initializeWatchFace();
         }
 
@@ -261,36 +267,37 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
                     mSharedPref.getBoolean(unreadNotificationPreferenceResourceName, true);
         }
 
-        private void initializeBackground() {
-
-            mBackgroundPaint = new Paint();
-            mBackgroundPaint.setColor(mBackgroundColor);
-
-            /* TODO(jewalker): code to be reused with followup CL for complication Background image.
-            mBackgroundBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bg);*/
-        }
-
-        private void initializeComplication() {
+        private void initializeComplicationsAndBackground() {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "initializeComplications()");
             }
 
+            // Initialize background color (in case background complication is inactive).
+            mBackgroundPaint = new Paint();
+            mBackgroundPaint.setColor(mBackgroundColor);
+
             mActiveComplicationDataSparseArray = new SparseArray<>(COMPLICATION_IDS.length);
 
             // Creates a ComplicationDrawable for each location where the user can render a
-            // complication on the watch face. In this watch face, we only create left and right,
-            // but you could add many more.
+            // complication on the watch face. In this watch face, we create one for left, right,
+            // and background, but you could add many more.
             ComplicationDrawable leftComplicationDrawable =
                     new ComplicationDrawable(getApplicationContext());
 
             ComplicationDrawable rightComplicationDrawable =
                     new ComplicationDrawable(getApplicationContext());
 
+            ComplicationDrawable backgroundComplicationDrawable =
+                    new ComplicationDrawable(getApplicationContext());
+
             // Adds new complications to a SparseArray to simplify setting styles and ambient
             // properties for all complications, i.e., iterate over them all.
             mComplicationDrawableSparseArray = new SparseArray<>(COMPLICATION_IDS.length);
+
             mComplicationDrawableSparseArray.put(LEFT_COMPLICATION_ID, leftComplicationDrawable);
             mComplicationDrawableSparseArray.put(RIGHT_COMPLICATION_ID, rightComplicationDrawable);
+            mComplicationDrawableSparseArray.put(
+                    BACKGROUND_COMPLICATION_ID, backgroundComplicationDrawable);
 
             setComplicationsActiveAndAmbientColors(mWatchHandHighlightColor);
             setActiveComplications(COMPLICATION_IDS);
@@ -325,26 +332,6 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
             mTickAndCirclePaint.setAntiAlias(true);
             mTickAndCirclePaint.setStyle(Paint.Style.STROKE);
             mTickAndCirclePaint.setShadowLayer(SHADOW_RADIUS, 0, 0, mWatchHandShadowColor);
-
-            /* TODO (jewalker): code to be reused with followup CL for complication Background image
-            // Asynchronous call extract colors from background image to improve watch face style.
-            Palette.from(mBackgroundBitmap).generate(
-                    new Palette.PaletteAsyncListener() {
-                        public void onGenerated(Palette palette) {
-                            */
-            /*
-             * Sometimes, palette is unable to generate a color palette
-             * so we need to check that we have one.
-             */
-            /*
-                    if (palette != null) {
-                        Log.d("onGenerated", palette.toString());
-                     mWatchHandAndComplicationsColor = palette.getVibrantColor(Color.WHITE);
-                        mWatchHandShadowColor = palette.getDarkMutedColor(Color.BLACK);
-                        updateWatchPaintStyles();
-                    }
-                }
-            });*/
         }
 
         /* Sets active/ambient mode colors for all complications.
@@ -355,25 +342,26 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
          * again if the user changes the highlight color via AnalogComplicationConfigActivity.
          */
         private void setComplicationsActiveAndAmbientColors(int primaryComplicationColor) {
-
+            int complicationId;
             ComplicationDrawable complicationDrawable;
 
             for (int i = 0; i < COMPLICATION_IDS.length; i++) {
-                complicationDrawable = mComplicationDrawableSparseArray.get(COMPLICATION_IDS[i]);
+                complicationId = COMPLICATION_IDS[i];
+                complicationDrawable = mComplicationDrawableSparseArray.get(complicationId);
 
-                // Active mode colors.
-                complicationDrawable.setBorderColorActive(primaryComplicationColor);
-                complicationDrawable.setIconColorActive(primaryComplicationColor);
-                complicationDrawable.setTitleColorActive(primaryComplicationColor);
-                complicationDrawable.setTextColorActive(primaryComplicationColor);
-                complicationDrawable.setRangedValuePrimaryColorActive(primaryComplicationColor);
+                if (complicationId == BACKGROUND_COMPLICATION_ID) {
+                    // It helps for the background color to be black in case the image used for the
+                    // watch face's background takes some time to load.
+                    complicationDrawable.setBackgroundColorActive(Color.BLACK);
+                } else {
+                    // Active mode colors.
+                    complicationDrawable.setBorderColorActive(primaryComplicationColor);
+                    complicationDrawable.setRangedValuePrimaryColorActive(primaryComplicationColor);
 
-                // Ambient mode colors.
-                complicationDrawable.setBorderColorAmbient(Color.WHITE);
-                complicationDrawable.setIconColorAmbient(Color.WHITE);
-                complicationDrawable.setTitleColorAmbient(Color.WHITE);
-                complicationDrawable.setTextColorAmbient(Color.WHITE);
-                complicationDrawable.setRangedValuePrimaryColorAmbient(Color.WHITE);
+                    // Ambient mode colors.
+                    complicationDrawable.setBorderColorAmbient(Color.WHITE);
+                    complicationDrawable.setRangedValuePrimaryColorAmbient(Color.WHITE);
+                }
             }
         }
 
@@ -417,9 +405,9 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
             mActiveComplicationDataSparseArray.put(complicationId, complicationData);
 
             // Updates correct ComplicationDrawable with updated data.
-            mComplicationDrawableSparseArray
-                    .get(complicationId)
-                    .setComplicationData(complicationData);
+            ComplicationDrawable complicationDrawable =
+                    mComplicationDrawableSparseArray.get(complicationId);
+            complicationDrawable.setComplicationData(complicationData);
 
             invalidate();
         }
@@ -443,6 +431,8 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
         private int getTappedComplicationId(int x, int y) {
             int complicationId;
             ComplicationData complicationData;
+            ComplicationDrawable complicationDrawable;
+
             long currentTimeMillis = System.currentTimeMillis();
 
             for (int i = 0; i < COMPLICATION_IDS.length; i++) {
@@ -451,11 +441,18 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
 
                 if ((complicationData != null)
                         && (complicationData.isActive(currentTimeMillis))
+                        // The line below this comment block disables taps for background
+                        // complications (usually not wanted by the user).
+                        // If you do want to enable this, remove the line below and reverse order
+                        // of the loop so it checks the last elements (non-background complications)
+                        // first. Otherwise, the background complication (since it is the size of
+                        // the whole watch face) will capture all taps.
+                        && (complicationData.getType() != ComplicationData.TYPE_LARGE_IMAGE)
                         && (complicationData.getType() != ComplicationData.TYPE_NOT_CONFIGURED)
                         && (complicationData.getType() != ComplicationData.TYPE_EMPTY)) {
 
-                    Rect complicationBoundingRect =
-                            mComplicationDrawableSparseArray.get(complicationId).getBounds();
+                    complicationDrawable = mComplicationDrawableSparseArray.get(complicationId);
+                    Rect complicationBoundingRect = complicationDrawable.getBounds();
 
                     if (complicationBoundingRect.width() > 0) {
                         if (complicationBoundingRect.contains(x, y)) {
@@ -534,11 +531,9 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
             ComplicationDrawable complicationDrawable;
 
             for (int i = 0; i < COMPLICATION_IDS.length; i++) {
-                complicationDrawable =
-                        mComplicationDrawableSparseArray.get(COMPLICATION_IDS[i]);
+                complicationDrawable = mComplicationDrawableSparseArray.get(COMPLICATION_IDS[i]);
                 complicationDrawable.setInAmbientMode(mAmbient);
             }
-
 
             // Check and trigger whether or not timer should be running (only in active mode).
             updateTimer();
@@ -643,7 +638,10 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
                             verticalOffset,
                             (horizontalOffset + sizeOfComplication),
                             (verticalOffset + sizeOfComplication));
-            mComplicationDrawableSparseArray.get(LEFT_COMPLICATION_ID).setBounds(leftBounds);
+
+            ComplicationDrawable leftComplicationDrawable =
+                    mComplicationDrawableSparseArray.get(LEFT_COMPLICATION_ID);
+            leftComplicationDrawable.setBounds(leftBounds);
 
             Rect rightBounds =
                     // Left, Top, Right, Bottom
@@ -652,45 +650,18 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
                             verticalOffset,
                             (midpointOfScreen + horizontalOffset + sizeOfComplication),
                             (verticalOffset + sizeOfComplication));
-            mComplicationDrawableSparseArray.get(RIGHT_COMPLICATION_ID).setBounds(rightBounds);
 
-            /* Scale loaded background image (more efficient) if surface dimensions change. */
-            /* TODO (jewalker): code to be reused with followup CL for complication Background image
-            float scale = ((float) width) / (float) mBackgroundBitmap.getWidth();
+            ComplicationDrawable rightComplicationDrawable =
+                    mComplicationDrawableSparseArray.get(RIGHT_COMPLICATION_ID);
+            rightComplicationDrawable.setBounds(rightBounds);
 
-            mBackgroundBitmap = Bitmap.createScaledBitmap(mBackgroundBitmap,
-                    (int) (mBackgroundBitmap.getWidth() * scale),
-                    (int) (mBackgroundBitmap.getHeight() * scale), true);*/
+            Rect screenForBackgroundBound =
+                    // Left, Top, Right, Bottom
+                    new Rect(0, 0, width, height);
 
-            /*
-             * Create a gray version of the image only if it will look nice on the device in
-             * ambient mode. That means we don't want devices that support burn-in
-             * protection (slight movements in pixels, not great for images going all the way to
-             * edges) and low ambient mode (degrades image quality).
-             *
-             * Also, if your watch face will know about all images ahead of time (users aren't
-             * selecting their own photos for the watch face), it will be more
-             * efficient to create a black/white version (png, etc.) and load that when you need it.
-             */
-            if (!mBurnInProtection && !mLowBitAmbient) {
-                initGrayBackgroundBitmap();
-            }
-        }
-
-        private void initGrayBackgroundBitmap() {
-
-            /* TODO (jewalker): code to be reused with followup CL for complication Background image
-            mGrayBackgroundBitmap = Bitmap.createBitmap(
-                    mBackgroundBitmap.getWidth(),
-                    mBackgroundBitmap.getHeight(),
-                    Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(mGrayBackgroundBitmap);
-            Paint grayPaint = new Paint();
-            ColorMatrix colorMatrix = new ColorMatrix();
-            colorMatrix.setSaturation(0);
-            ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
-            grayPaint.setColorFilter(filter);
-            canvas.drawBitmap(mBackgroundBitmap, 0, 0, grayPaint);*/
+            ComplicationDrawable backgroundComplicationDrawable =
+                    mComplicationDrawableSparseArray.get(BACKGROUND_COMPLICATION_ID);
+            backgroundComplicationDrawable.setBounds(screenForBackgroundBound);
         }
 
         @Override
@@ -734,28 +705,17 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
             } else {
                 canvas.drawColor(mBackgroundColor);
             }
-
-            /* TODO (jewalker): code to be reused with followup CL for complication Background image
-            } else if (mAmbient) {
-                canvas.drawBitmap(mGrayBackgroundBitmap, 0, 0, mBackgroundPaint);
-            } else {
-                canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
-            }*/
         }
 
         private void drawComplications(Canvas canvas, long currentTimeMillis) {
             int complicationId;
-            ComplicationData complicationData;
+            ComplicationDrawable complicationDrawable;
 
             for (int i = 0; i < COMPLICATION_IDS.length; i++) {
                 complicationId = COMPLICATION_IDS[i];
-                complicationData = mActiveComplicationDataSparseArray.get(complicationId);
+                complicationDrawable = mComplicationDrawableSparseArray.get(complicationId);
 
-                if ((complicationData != null) && (complicationData.isActive(currentTimeMillis))) {
-                    mComplicationDrawableSparseArray
-                            .get(complicationId)
-                            .draw(canvas, currentTimeMillis);
-                }
+                complicationDrawable.draw(canvas, currentTimeMillis);
             }
         }
 

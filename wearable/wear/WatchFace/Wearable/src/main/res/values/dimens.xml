@@ -37,6 +37,7 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <!-- TODO: 180 H1, 140, H2 -->
     <dimen name="analog_complication_settings_preview_size">180dp</dimen>
     <dimen name="analog_complication_color_picker_size">70dp</dimen>
 </resources>
