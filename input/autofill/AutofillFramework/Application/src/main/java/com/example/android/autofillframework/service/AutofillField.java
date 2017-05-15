@@ -16,26 +16,26 @@
 package com.example.android.autofillframework.service;
 
 import android.app.assist.AssistStructure;
-import android.view.autofill.AutoFillId;
+import android.view.autofill.AutofillId;
 
 /**
  * Class that represents a field that can be autofilled. It will contain a description
  * (what type data the field holds), an AutoFillId (an ID unique to the rest of the ViewStructure),
  * and a value (what data is currently in the field).
  */
-public class AutoFillField {
+public class AutofillField {
     private final String description;
-    private AutoFillId id;
+    private AutofillId id;
 
     // For simplicity, we will only support text values.
     private String value;
 
-    public AutoFillField(String description) {
+    public AutofillField(String description) {
         this.description = description;
     }
 
     void setFrom(AssistStructure.ViewNode view) {
-        id = view.getAutoFillId();
+        id = view.getAutofillId();
         CharSequence text = view.getText();
         value = text == null ? null : text.toString();
     }
@@ -44,7 +44,7 @@ public class AutoFillField {
         return description;
     }
 
-    public AutoFillId getId() {
+    public AutofillId getId() {
         return id;
     }
 
@@ -54,7 +54,7 @@ public class AutoFillField {
 
     @Override
     public String toString() {
-        return "AutoFillField: [id=" + id + ", value=" + value + "]";
+        return "AutofillField: [id=" + id + ", value=" + value + "]";
     }
 
 }

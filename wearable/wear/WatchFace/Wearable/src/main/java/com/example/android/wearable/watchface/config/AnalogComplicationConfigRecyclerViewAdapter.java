@@ -34,6 +34,7 @@ import android.support.wearable.complications.ComplicationProviderInfo;
 import android.support.wearable.complications.ProviderInfoRetriever;
 import android.support.wearable.complications.ProviderInfoRetriever.OnProviderInfoReceivedCallback;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,6 +43,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.example.android.wearable.watchface.R;
 import com.example.android.wearable.watchface.model.AnalogComplicationConfigData.BackgroundComplicationConfigItem;
@@ -232,11 +234,10 @@ public class AnalogComplicationConfigRecyclerViewAdapter
 
                 int defaultComplicationResourceId =
                         previewAndComplicationsConfigItem.getDefaultComplicationResourceId();
-
-                previewAndComplicationsViewHolder.updateWatchFaceColors();
                 previewAndComplicationsViewHolder.setDefaultComplicationDrawable(
                         defaultComplicationResourceId);
-                previewAndComplicationsViewHolder.retrieveInitialComplicationsData();
+
+                previewAndComplicationsViewHolder.initializesColorsAndComplications();
                 break;
 
             case TYPE_MORE_OPTIONS:
@@ -345,7 +346,7 @@ public class AnalogComplicationConfigRecyclerViewAdapter
 
         private View mWatchFaceArmsAndTicksView;
         private View mWatchFaceHighlightPreviewView;
-        private View mWatchFaceBackgroundPreviewView;
+        private ImageView mWatchFaceBackgroundPreviewImageView;
 
         private ImageView mLeftComplicationBackground;
         private ImageView mRightComplicationBackground;
@@ -355,10 +356,13 @@ public class AnalogComplicationConfigRecyclerViewAdapter
 
         private Drawable mDefaultComplicationDrawable;
 
+        private boolean mBackgroundComplicationEnabled;
+
         public PreviewAndComplicationsViewHolder(final View view) {
             super(view);
 
-            mWatchFaceBackgroundPreviewView = view.findViewById(R.id.watch_face_background);
+            mWatchFaceBackgroundPreviewImageView =
+                    (ImageView) view.findViewById(R.id.watch_face_background);
             mWatchFaceArmsAndTicksView = view.findViewById(R.id.watch_face_arms_and_ticks);
 
             // In our case, just the second arm.
@@ -394,15 +398,30 @@ public class AnalogComplicationConfigRecyclerViewAdapter
         }
 
         public void updateWatchFaceColors() {
-            // Updates background color.
-            String backgroundSharedPrefString = mContext.getString(R.string.saved_background_color);
-            int currentBackgroundColor =
-                    mSharedPref.getInt(backgroundSharedPrefString, Color.BLACK);
 
-            PorterDuffColorFilter backgroundColorFilter =
-                    new PorterDuffColorFilter(currentBackgroundColor, PorterDuff.Mode.SRC_ATOP);
+            // Only update background colors for preview if background complications are disabled.
+            if (!mBackgroundComplicationEnabled) {
+                // Updates background color.
+                String backgroundSharedPrefString =
+                        mContext.getString(R.string.saved_background_color);
+                int currentBackgroundColor =
+                        mSharedPref.getInt(backgroundSharedPrefString, Color.BLACK);
 
-            mWatchFaceBackgroundPreviewView.getBackground().setColorFilter(backgroundColorFilter);
+                PorterDuffColorFilter backgroundColorFilter =
+                        new PorterDuffColorFilter(currentBackgroundColor, PorterDuff.Mode.SRC_ATOP);
+
+                mWatchFaceBackgroundPreviewImageView
+                        .getBackground()
+                        .setColorFilter(backgroundColorFilter);
+
+            } else {
+                // Inform user that they need to disable background image for color to work.
+                CharSequence text = "Selected image overrides background color.";
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(mContext, text, duration);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
 
             // Updates highlight color (just second arm).
             String highlightSharedPrefString = mContext.getString(R.string.saved_marker_color);
@@ -421,6 +440,8 @@ public class AnalogComplicationConfigRecyclerViewAdapter
 
             mSelectedComplicationId =
                     AnalogComplicationWatchFaceService.getComplicationId(complicationLocation);
+
+            mBackgroundComplicationEnabled = false;
 
             if (mSelectedComplicationId >= 0) {
 
@@ -463,8 +484,37 @@ public class AnalogComplicationConfigRecyclerViewAdapter
 
             if (watchFaceComplicationId == mBackgroundComplicationId) {
                 if (complicationProviderInfo != null) {
-                    // TODO: Something with icon to show background set?
-                    // complicationProviderInfo.providerIcon
+                    mBackgroundComplicationEnabled = true;
+
+                    // Since we can't get the background complication image outside of the
+                    // watch face, we set the icon for that provider instead with a gray background.
+                    PorterDuffColorFilter backgroundColorFilter =
+                            new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
+
+                    mWatchFaceBackgroundPreviewImageView
+                            .getBackground()
+                            .setColorFilter(backgroundColorFilter);
+                    mWatchFaceBackgroundPreviewImageView.setImageIcon(
+                            complicationProviderInfo.providerIcon);
+
+                } else {
+                    mBackgroundComplicationEnabled = false;
+
+                    // Clears icon for background if it was present before.
+                    mWatchFaceBackgroundPreviewImageView.setImageResource(
+                            android.R.color.transparent);
+                    String backgroundSharedPrefString =
+                            mContext.getString(R.string.saved_background_color);
+                    int currentBackgroundColor =
+                            mSharedPref.getInt(backgroundSharedPrefString, Color.BLACK);
+
+                    PorterDuffColorFilter backgroundColorFilter =
+                            new PorterDuffColorFilter(
+                                    currentBackgroundColor, PorterDuff.Mode.SRC_ATOP);
+
+                    mWatchFaceBackgroundPreviewImageView
+                            .getBackground()
+                            .setColorFilter(backgroundColorFilter);
                 }
 
             } else if (watchFaceComplicationId == mLeftComplicationId) {
@@ -489,8 +539,27 @@ public class AnalogComplicationConfigRecyclerViewAdapter
             }
         }
 
-        public void retrieveInitialComplicationsData() {
+        public void initializesColorsAndComplications() {
 
+            // Initializes highlight color (just second arm and part of complications).
+            String highlightSharedPrefString = mContext.getString(R.string.saved_marker_color);
+            int currentHighlightColor = mSharedPref.getInt(highlightSharedPrefString, Color.RED);
+
+            PorterDuffColorFilter highlightColorFilter =
+                    new PorterDuffColorFilter(currentHighlightColor, PorterDuff.Mode.SRC_ATOP);
+
+            mWatchFaceHighlightPreviewView.getBackground().setColorFilter(highlightColorFilter);
+
+            // Initializes background color to gray (updates to color or complication icon based
+            // on whether the background complication is live or not.
+            PorterDuffColorFilter backgroundColorFilter =
+                    new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
+
+            mWatchFaceBackgroundPreviewImageView
+                    .getBackground()
+                    .setColorFilter(backgroundColorFilter);
+
+            // TODO: change this to return from watch face
             final int[] complicationIds =
                     new int[] {
                         mBackgroundComplicationId, mLeftComplicationId, mRightComplicationId

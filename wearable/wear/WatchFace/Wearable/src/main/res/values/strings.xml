@@ -18,8 +18,8 @@
 
     <string name="opengl_name">Sample OpenGL</string>
     <string name="interactive_name">Sample Interactive</string>
-    <string name="analog_complication">Sample Analog with Complications</string>
-    <string name="digital_name">Sample Digital</string>
+    <string name="analog_complication">Sample Analog</string>
+    <string name="digital_name">Sample Digital 1.0</string>
 
     <string name="digital_background_color">Background color</string>
     <string name="digital_config_name">Digital watch face configuration</string>
@@ -34,7 +34,7 @@
     <string name="saved_background_color">saved_background_color</string>
     <string name="saved_unread_notifications_pref">saved_unread_notifications</string>
 
-    <!-- Using "\n" to conserve horizontal space in config menu. -->
+    <!-- Use of "\n" is to conserve horizontal space in config menu. -->
     <string name="config_marker_color_label">Marker\nColor</string>
     <string name="config_background_color_label">Background\nColor</string>
     <string name="config_unread_notifications_label">Unread\nNotifications</string>

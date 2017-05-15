@@ -19,26 +19,45 @@ import android.app.assist.AssistStructure;
 import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.CancellationSignal;
-import android.service.autofill.AutoFillService;
+import android.service.autofill.AutofillService;
 import android.service.autofill.FillCallback;
+import android.service.autofill.FillContext;
+import android.service.autofill.FillRequest;
 import android.service.autofill.FillResponse;
 import android.service.autofill.SaveCallback;
+import android.service.autofill.SaveRequest;
 import android.util.Log;
-import android.view.autofill.AutoFillId;
+import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
 
 import com.example.android.autofillframework.R;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.example.android.autofillframework.CommonUtil.TAG;
 import static com.example.android.autofillframework.CommonUtil.bundleToString;
 
-public class MyAutoFillService extends AutoFillService {
+public class MyAutofillService extends AutofillService {
 
     @Override
-    public void onFillRequest(AssistStructure structure, Bundle data,
-            CancellationSignal cancellationSignal, FillCallback callback) {
+    public void onFillRequest(AssistStructure assistStructure, Bundle bundle, int i,
+            CancellationSignal cancellationSignal, FillCallback fillCallback) {
+        /* Deprecated, ignore */
+    }
+
+    @Override
+    public void onSaveRequest(AssistStructure assistStructure, Bundle bundle,
+            SaveCallback saveCallback) {
+        /* Deprecated, ignore */
+    }
+
+    @Override
+    public void onFillRequest(FillRequest request, CancellationSignal cancellationSignal,
+            FillCallback callback) {
+        AssistStructure structure = request.getStructure();
+        final Bundle data = request.getClientState();
         Log.d(TAG, "onFillRequest(): data=" + bundleToString(data));
 
         // Temporary hack for disabling autofill for components in this autofill service.
@@ -53,6 +72,12 @@ public class MyAutoFillService extends AutoFillService {
                 Log.w(TAG, "Cancel autofill not implemented in this sample.");
             }
         });
+        // Parse AutoFill data in Activity
+        StructureParser parser = new StructureParser(structure);
+        parser.parse();
+        AutofillId usernameId = parser.getUsernameField().getId();
+        AutofillId passwordId = parser.getPasswordField().getId();
+
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
         // Check user's settings for authenticating Responses and Datasets
         boolean responseAuth = MyPreferences.getInstance(this).isResponseAuth();
@@ -62,17 +87,13 @@ public class MyAutoFillService extends AutoFillService {
             IntentSender sender = AuthActivity.getAuthIntentSenderForResponse(this);
             RemoteViews presentation = new RemoteViews(getPackageName(), R.layout.list_item);
             presentation.setTextViewText(R.id.text1, getString(R.string.autofill_sign_in_prompt));
-            responseBuilder.setAuthentication(sender, presentation);
+            responseBuilder.setAuthentication(new AutofillId[]{usernameId, passwordId},
+                    sender, presentation);
             callback.onSuccess(responseBuilder.build());
         } else {
             boolean datasetAuth = MyPreferences.getInstance(this).isDatasetAuth();
-            // Parse AutoFill data in Activity
-            StructureParser parser = new StructureParser(structure);
-            parser.parse();
-            AutoFillId usernameId = parser.getUsernameField().getId();
-            AutoFillId passwordId = parser.getPasswordField().getId();
             Map<String, LoginCredential> credentialsMap =
-                    AutoFillData.getInstance().getCredentialsMap(this);
+                    AutofillData.getInstance().getCredentialsMap(this);
             if (usernameId == null || passwordId == null ||
                     credentialsMap == null || credentialsMap.isEmpty()) {
                 // Activity does not have usernameField and passwordField fields, or service does not
@@ -82,14 +103,17 @@ public class MyAutoFillService extends AutoFillService {
                 return;
             }
 
-            FillResponse response = AutoFillHelper.newCredentialsResponse(
+            FillResponse response = AutofillHelper.newCredentialsResponse(
                     this, datasetAuth, usernameId, passwordId, credentialsMap);
             callback.onSuccess(response);
         }
     }
 
     @Override
-    public void onSaveRequest(AssistStructure structure, Bundle data, SaveCallback callback) {
+    public void onSaveRequest(SaveRequest request, SaveCallback callback) {
+        List<FillContext> context = request.getFillContexts();
+        final AssistStructure structure = context.get(context.size() - 1).getStructure();
+        final Bundle data = request.getClientState();
         Log.d(TAG, "onSaveFillRequest(): data=" + bundleToString(data));
         StructureParser parser = new StructureParser(structure);
         parser.parse();
@@ -97,7 +121,7 @@ public class MyAutoFillService extends AutoFillService {
         String username = parser.getUsernameField().getValue();
         String password = parser.getPasswordField().getValue();
         LoginCredential loginCredential = new LoginCredential(username, password);
-        AutoFillData.getInstance().updateCredentials(packageName, loginCredential);
+        AutofillData.getInstance().updateCredentials(packageName, loginCredential);
     }
 
     @Override

@@ -27,8 +27,8 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewStructure;
-import android.view.autofill.AutoFillManager;
-import android.view.autofill.AutoFillValue;
+import android.view.autofill.AutofillManager;
+import android.view.autofill.AutofillValue;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -51,7 +51,7 @@ public class CustomVirtualView extends View {
 
     private final ArrayList<Line> mLines = new ArrayList<>();
     private final SparseArray<Item> mItems = new SparseArray<>();
-    private final AutoFillManager mAfm;
+    private final AutofillManager mAfm;
 
     private Line mFocusedLine;
     private Paint mTextPaint;
@@ -69,7 +69,7 @@ public class CustomVirtualView extends View {
     public CustomVirtualView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mAfm = context.getSystemService(AutoFillManager.class);
+        mAfm = context.getSystemService(AutofillManager.class);
 
         mTextPaint = new Paint();
 
@@ -90,39 +90,44 @@ public class CustomVirtualView extends View {
     }
 
     @Override
-    public void autoFillVirtual(int id, AutoFillValue value) {
+    public void autofill(SparseArray<AutofillValue> values) {
         // User has just selected a Dataset from the list of Autofill suggestions and the Dataset's
-        // AutoFillValue gets passed into this method.
-        Log.d(TAG, "autoFillVirtual: id=" + id + ", value=" + value);
-        Item item = mItems.get(id);
-        if (item == null) {
-            Log.w(TAG, "No item for id " + id);
-            return;
+        // AutofillValue gets passed into this method.
+        Log.d(TAG, "autoFill(): " + values);
+        for (int i = 0; i < values.size(); i++) {
+            final int id = values.keyAt(i);
+            final AutofillValue value = values.valueAt(i);
+            final Item item = mItems.get(id);
+            if (item == null) {
+                Log.w(TAG, "No item for id " + id);
+                return;
+            }
+            if (!item.editable) {
+                Log.w(TAG, "Item for id " + id + " is not editable: " + item);
+                return;
+            }
+            // Set the item's text to the text wrapped in the AutofillValue.
+            item.text = value.getTextValue();
         }
-        if (!item.editable) {
-            Log.w(TAG, "Item for id " + id + " is not editable: " + item);
-            return;
-        }
-        // Set the item's text to the text wrapped in the AutoFillValue.
-        item.text = value.getTextValue();
         postInvalidate();
     }
 
     @Override
-    public void onProvideAutoFillVirtualStructure(ViewStructure structure, int flags) {
+    public void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
         // Build a ViewStructure to pack in AutoFillService requests.
         structure.setClassName(getClass().getName());
         int childrenSize = mItems.size();
-        Log.d(TAG, "onProvideAutoFillVirtualStructure(): flags = " + flags + ", items = "
+        Log.d(TAG, "onProvideAutofillVirtualStructure(): flags = " + flags + ", items = "
                 + childrenSize + ", extras: " + bundleToString(structure.getExtras()));
         int index = structure.addChildCount(childrenSize);
         for (int i = 0; i < childrenSize; i++) {
             Item item = mItems.valueAt(i);
             Log.d(TAG, "Adding new child at index " + index + ": " + item);
-            ViewStructure child = structure.newChild(index, item.id, flags);
-            child.setSanitized(item.sanitized);
+            ViewStructure child = structure.newChild(index);
+            child.setAutofillId(structure, item.id);
+            child.setDataIsSensitive(!item.sanitized);
             child.setText(item.text);
-            child.setAutoFillValue(AutoFillValue.forText(item.text));
+            child.setAutofillValue(AutofillValue.forText(item.text));
             child.setFocused(item.line.focused);
             child.setId(item.id, getContext().getPackageName(), null, item.line.idEntry);
             child.setClassName(item.getClassName());
@@ -240,7 +245,7 @@ public class CustomVirtualView extends View {
 
         void setBounds(float x, float y) {
             // This determines the location / size of the autofill dropdown because we pass these
-            // bounds in the AutoFillManager.virtualFocusChanged() call.
+            // bounds in the AutofillManager.virtualFocusChanged() call.
             int left = (int) (x + mTextPaint.measureText(labelItem.text.toString() + ": ["));
             int right = (int) (left + mTextPaint.measureText(fieldTextItem.text.toString()));
             int top = (int) (y + mTextHeight);
@@ -256,7 +261,11 @@ public class CustomVirtualView extends View {
         void changeFocus(boolean focused) {
             Log.d(TAG, "onChangeFocus() on " + fieldTextItem.id + ": " + focused + " bounds: " + bounds);
             this.focused = focused;
-            mAfm.virtualFocusChanged(CustomVirtualView.this, fieldTextItem.id, bounds, focused);
+            if (focused) {
+                mAfm.notifyViewEntered(CustomVirtualView.this, fieldTextItem.id, bounds);
+            } else {
+                mAfm.notifyViewExited(CustomVirtualView.this, fieldTextItem.id);
+            }
         }
 
         public void reset() {

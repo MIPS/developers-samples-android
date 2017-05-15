@@ -27,20 +27,20 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
  * Singleton holding Autofill data. In this simple Autofill service, it only holds LoginCredentials
  * for every client app that uses the service.
  */
-final class AutoFillData {
+final class AutofillData {
 
-    private static AutoFillData sAutoFillData;
+    private static AutofillData sAutoFillData;
 
     // Structure: {<packageName> : {<datasetName> : <loginCredential object>, ...}, ...}
     private final Map<String, Map<String, LoginCredential>> mLoginCredentials =
             new LinkedHashMap<>();
 
-    private AutoFillData() {
+    private AutofillData() {
     }
 
-    public static AutoFillData getInstance() {
+    public static AutofillData getInstance() {
         if (sAutoFillData == null) {
-            sAutoFillData = new AutoFillData();
+            sAutoFillData = new AutofillData();
         }
         return sAutoFillData;
     }

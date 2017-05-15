@@ -31,8 +31,8 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
 final class StructureParser {
 
     // This simple AutoFill service is capable of parsing these fields:
-    private final AutoFillField usernameField = new AutoFillField("usernameField");
-    private final AutoFillField passwordField = new AutoFillField("passwordField");
+    private final AutofillField usernameField = new AutofillField("usernameField");
+    private final AutofillField passwordField = new AutofillField("passwordField");
     private final AssistStructure structure;
 
 
@@ -70,11 +70,11 @@ final class StructureParser {
         }
     }
 
-    public AutoFillField getUsernameField() {
+    public AutofillField getUsernameField() {
         return usernameField;
     }
 
-    public AutoFillField getPasswordField() {
+    public AutofillField getPasswordField() {
         return passwordField;
     }
 }

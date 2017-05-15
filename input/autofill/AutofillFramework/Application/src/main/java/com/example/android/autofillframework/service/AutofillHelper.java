@@ -20,8 +20,8 @@ import android.content.IntentSender;
 import android.service.autofill.Dataset;
 import android.service.autofill.FillResponse;
 import android.util.Log;
-import android.view.autofill.AutoFillId;
-import android.view.autofill.AutoFillValue;
+import android.view.autofill.AutofillId;
+import android.view.autofill.AutofillValue;
 import android.widget.RemoteViews;
 
 import com.example.android.autofillframework.R;
@@ -34,20 +34,20 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
 /**
  * This is a class containing helper methods for building Autofill Datasets and Responses.
  */
-public final class AutoFillHelper {
+public final class AutofillHelper {
     /**
      * Wraps autofill data in a Dataset object which can then be sent back to the client View.
      */
     public static Dataset newCredentialDataset(Context context,
-            LoginCredential loginCredential, AutoFillId usernameId,
-            AutoFillId passwordId) {
+            LoginCredential loginCredential, AutofillId usernameId,
+            AutofillId passwordId) {
         String datasetName = loginCredential.getDatasetName();
         RemoteViews presentation = new RemoteViews(context.getPackageName(),
                 R.layout.list_item);
         presentation.setTextViewText(R.id.text1, datasetName);
         Dataset.Builder datasetBuilder = new Dataset.Builder(presentation);
-        datasetBuilder.setValue(usernameId, AutoFillValue.forText(loginCredential.getUsername()));
-        datasetBuilder.setValue(passwordId, AutoFillValue.forText(loginCredential.getPassword()));
+        datasetBuilder.setValue(usernameId, AutofillValue.forText(loginCredential.getUsername()));
+        datasetBuilder.setValue(passwordId, AutofillValue.forText(loginCredential.getPassword()));
         return datasetBuilder.build();
     }
 
@@ -56,7 +56,7 @@ public final class AutoFillHelper {
      * be sent back to the client View.
      */
     public static FillResponse newCredentialsResponse(Context context,
-            boolean datasetAuth, AutoFillId usernameId, AutoFillId passwordId,
+            boolean datasetAuth, AutofillId usernameId, AutofillId passwordId,
             Map<String, LoginCredential> credentialsMap) {
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
         if (usernameId == null || passwordId == null ||

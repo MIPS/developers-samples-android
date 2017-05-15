@@ -53,18 +53,18 @@
         </activity>
 
         <!--
-        Declare AutoFillService implementation; only needed for a small number of apps that will
-        be implementing an AutoFillService. Framework parses meta-data and sets the service's
+        Declare AutofillService implementation; only needed for a small number of apps that will
+        be implementing an AutofillService. Framework parses meta-data and sets the service's
         Settings Activity based on what the meta-data resource points to.
         -->
         <service
-            android:name=".service.MyAutoFillService"
+            android:name=".service.MyAutofillService"
             android:permission="android.permission.BIND_AUTO_FILL" >
             <meta-data
                 android:name="android.autofill"
                 android:resource="@xml/autofill_service" />
             <intent-filter>
-                <action android:name="android.service.autofill.AutoFillService" />
+                <action android:name="android.service.autofill.AutofillService" />
             </intent-filter>
         </service>
         <activity android:name=".service.AuthActivity" />

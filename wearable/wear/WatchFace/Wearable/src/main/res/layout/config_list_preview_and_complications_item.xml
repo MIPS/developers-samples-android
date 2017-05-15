@@ -23,8 +23,10 @@ based on changes by the user.
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <View
+    <ImageView
         android:id="@+id/watch_face_background"
+        android:padding="@dimen/watch_face_preview_background_padding"
+        android:scaleType="fitXY"
         android:layout_width="@dimen/analog_complication_settings_preview_size"
         android:layout_height="@dimen/analog_complication_settings_preview_size"
         android:layout_centerHorizontal="true"
