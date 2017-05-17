@@ -97,6 +97,11 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
         }
     }
 
+    // Used by {@link AnalogComplicationConfigRecyclerViewAdapter} to retrieve all complication ids.
+    public static int[] getComplicationIds() {
+        return COMPLICATION_IDS;
+    }
+
     // Used by {@link AnalogComplicationConfigRecyclerViewAdapter} to see which complication types
     // are supported in the settings config activity.
     public static int[] getSupportedComplicationTypes(
@@ -197,10 +202,6 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
                 new Handler() {
                     @Override
                     public void handleMessage(Message message) {
-
-                        if (Log.isLoggable(TAG, Log.DEBUG)) {
-                            Log.d(TAG, "updating time");
-                        }
                         invalidate();
                         if (shouldTimerBeRunning()) {
                             long timeMs = System.currentTimeMillis();
@@ -214,9 +215,8 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onCreate(SurfaceHolder holder) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onCreate");
-            }
+            Log.d(TAG, "onCreate");
+
             super.onCreate(holder);
 
             // Used throughout watch face to pull user's preferences.
@@ -268,9 +268,7 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
         }
 
         private void initializeComplicationsAndBackground() {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "initializeComplications()");
-            }
+            Log.d(TAG, "initializeComplications()");
 
             // Initialize background color (in case background complication is inactive).
             mBackgroundPaint = new Paint();
@@ -374,9 +372,7 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onPropertiesChanged(Bundle properties) {
             super.onPropertiesChanged(properties);
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onPropertiesChanged: low-bit ambient = " + mLowBitAmbient);
-            }
+            Log.d(TAG, "onPropertiesChanged: low-bit ambient = " + mLowBitAmbient);
 
             mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
             mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
@@ -470,9 +466,7 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
          * Fires PendingIntent associated with complication (if it has one).
          */
         private void onComplicationTap(int complicationId) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onComplicationTap()");
-            }
+            Log.d(TAG, "onComplicationTap()");
 
             ComplicationData complicationData =
                     mActiveComplicationDataSparseArray.get(complicationId);
@@ -503,9 +497,7 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
                 }
 
             } else {
-                if (Log.isLoggable(TAG, Log.DEBUG)) {
-                    Log.d(TAG, "No PendingIntent for complication " + complicationId + ".");
-                }
+                Log.d(TAG, "No PendingIntent for complication " + complicationId + ".");
             }
         }
 
@@ -518,9 +510,8 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onAmbientModeChanged(boolean inAmbientMode) {
             super.onAmbientModeChanged(inAmbientMode);
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onAmbientModeChanged: " + inAmbientMode);
-            }
+            Log.d(TAG, "onAmbientModeChanged: " + inAmbientMode);
+
             mAmbient = inAmbientMode;
 
             updateWatchPaintStyles();
@@ -666,9 +657,6 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onDraw");
-            }
             long now = System.currentTimeMillis();
             mCalendar.setTimeInMillis(now);
 
@@ -858,9 +846,6 @@ public class AnalogComplicationWatchFaceService extends CanvasWatchFaceService {
          * Starts/stops the {@link #mUpdateTimeHandler} timer based on the state of the watch face.
          */
         private void updateTimer() {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "updateTimer");
-            }
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
             if (shouldTimerBeRunning()) {
                 mUpdateTimeHandler.sendEmptyMessage(MSG_UPDATE_TIME);

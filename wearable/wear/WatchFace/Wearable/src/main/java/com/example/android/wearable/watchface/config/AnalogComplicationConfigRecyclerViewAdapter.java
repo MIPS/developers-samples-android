@@ -559,11 +559,7 @@ public class AnalogComplicationConfigRecyclerViewAdapter
                     .getBackground()
                     .setColorFilter(backgroundColorFilter);
 
-            // TODO: change this to return from watch face
-            final int[] complicationIds =
-                    new int[] {
-                        mBackgroundComplicationId, mLeftComplicationId, mRightComplicationId
-                    };
+            final int[] complicationIds = AnalogComplicationWatchFaceService.getComplicationIds();
 
             mProviderInfoRetriever.retrieveProviderInfo(
                     new OnProviderInfoReceivedCallback() {
@@ -572,7 +568,7 @@ public class AnalogComplicationConfigRecyclerViewAdapter
                                 int watchFaceComplicationId,
                                 @Nullable ComplicationProviderInfo complicationProviderInfo) {
 
-                            Log.d(TAG, "\n\nonProviderInfoReceived: " + complicationProviderInfo);
+                            Log.d(TAG, "onProviderInfoReceived: " + complicationProviderInfo);
 
                             updateComplicationViews(
                                     watchFaceComplicationId, complicationProviderInfo);

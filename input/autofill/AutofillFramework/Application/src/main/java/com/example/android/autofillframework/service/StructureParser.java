@@ -20,61 +20,66 @@ import android.app.assist.AssistStructure.ViewNode;
 import android.app.assist.AssistStructure.WindowNode;
 import android.util.Log;
 
+import com.example.android.autofillframework.service.model.AutofillField;
+import com.example.android.autofillframework.service.model.AutofillFieldsCollection;
+import com.example.android.autofillframework.service.model.ClientFormData;
+import com.example.android.autofillframework.service.model.SavedAutofillValue;
+
 import static com.example.android.autofillframework.CommonUtil.TAG;
 
 /**
  * Parser for an AssistStructure object. This is invoked when the Autofill Service receives an
- * AssistStructure from the client Activity, representing its View hierarchy. In this basic
- * sample, it only parses the hierarchy looking for Username and Password fields based on their
- * resource IDs.
+ * AssistStructure from the client Activity, representing its View hierarchy. In this
+ * sample, it parses the hierarchy and records
  */
 final class StructureParser {
-
-    // This simple AutoFill service is capable of parsing these fields:
-    private final AutofillField usernameField = new AutofillField("usernameField");
-    private final AutofillField passwordField = new AutofillField("passwordField");
-    private final AssistStructure structure;
-
+    private final AutofillFieldsCollection mAutofillFields = new AutofillFieldsCollection();
+    private final AssistStructure mStructure;
+    private ClientFormData mClientFormData;
 
     StructureParser(AssistStructure structure) {
-        this.structure = structure;
+        mStructure = structure;
+
     }
 
     /**
-     * Depth first search of AssistStructure in search of Views whose resource ID entry is
-     * "usernameField" or "passwordField"
+     * Traverse AssistStructure and add ViewNode metadata to a flat list.
      */
     void parse() {
-        Log.d(TAG, "Parsing structure for " + structure.getActivityComponent());
-        final int nodes = structure.getWindowNodeCount();
+        Log.d(TAG, "Parsing structure for " + mStructure.getActivityComponent());
+        int nodes = mStructure.getWindowNodeCount();
+        mClientFormData = new ClientFormData();
         for (int i = 0; i < nodes; i++) {
-            WindowNode node = structure.getWindowNodeAt(i);
+            WindowNode node = mStructure.getWindowNodeAt(i);
             ViewNode view = node.getRootViewNode();
             parseLocked(view);
         }
     }
 
-    private void parseLocked(ViewNode view) {
-        final String resourceId = view.getIdEntry();
-        Log.d(TAG, "resourceId == " + resourceId);
-        if (resourceId != null && resourceId.equals(usernameField.getDescription())) {
-            usernameField.setFrom(view);
-        } else if (resourceId != null && resourceId.equals(passwordField.getDescription())) {
-            passwordField.setFrom(view);
+    private void parseLocked(ViewNode viewNode) {
+        if (viewNode.getAutofillHints() != null && viewNode.getAutofillHints().length > 0) {
+            //TODO check to make sure hints are supported by service.
+            mAutofillFields.add(new AutofillField(viewNode));
+            mClientFormData
+                    .set(viewNode.getAutofillHints(), SavedAutofillValue.fromViewNode(viewNode));
         }
-        final int childrenSize = view.getChildCount();
+        int childrenSize = viewNode.getChildCount();
         if (childrenSize > 0) {
             for (int i = 0; i < childrenSize; i++) {
-                parseLocked(view.getChildAt(i));
+                parseLocked(viewNode.getChildAt(i));
             }
         }
     }
 
-    public AutofillField getUsernameField() {
-        return usernameField;
+    public AutofillFieldsCollection getAutofillFields() {
+        return mAutofillFields;
     }
 
-    public AutofillField getPasswordField() {
-        return passwordField;
+    public int getSaveTypes() {
+        return mAutofillFields.getSaveType();
+    }
+
+    public ClientFormData getClientFormData() {
+        return mClientFormData;
     }
 }

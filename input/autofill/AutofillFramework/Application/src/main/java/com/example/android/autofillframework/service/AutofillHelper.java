@@ -19,14 +19,16 @@ import android.content.Context;
 import android.content.IntentSender;
 import android.service.autofill.Dataset;
 import android.service.autofill.FillResponse;
+import android.service.autofill.SaveInfo;
 import android.util.Log;
 import android.view.autofill.AutofillId;
-import android.view.autofill.AutofillValue;
 import android.widget.RemoteViews;
 
 import com.example.android.autofillframework.R;
+import com.example.android.autofillframework.service.model.AutofillFieldsCollection;
+import com.example.android.autofillframework.service.model.ClientFormData;
 
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 
 import static com.example.android.autofillframework.CommonUtil.TAG;
@@ -35,61 +37,58 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
  * This is a class containing helper methods for building Autofill Datasets and Responses.
  */
 public final class AutofillHelper {
+
     /**
-     * Wraps autofill data in a Dataset object which can then be sent back to the client View.
+     * Wraps autofill data in a LoginCredential  Dataset object which can then be sent back to the
+     * client View.
      */
-    public static Dataset newCredentialDataset(Context context,
-            LoginCredential loginCredential, AutofillId usernameId,
-            AutofillId passwordId) {
-        String datasetName = loginCredential.getDatasetName();
-        RemoteViews presentation = new RemoteViews(context.getPackageName(),
-                R.layout.list_item);
-        presentation.setTextViewText(R.id.text1, datasetName);
-        Dataset.Builder datasetBuilder = new Dataset.Builder(presentation);
-        datasetBuilder.setValue(usernameId, AutofillValue.forText(loginCredential.getUsername()));
-        datasetBuilder.setValue(passwordId, AutofillValue.forText(loginCredential.getPassword()));
+    public static Dataset newDataset(Context context,
+            AutofillFieldsCollection autofillFields, ClientFormData clientFormData) {
+        Dataset.Builder datasetBuilder = new Dataset.Builder
+                (newRemoteViews(context.getPackageName(), clientFormData.getDatasetName()));
+        clientFormData.applyToFields(autofillFields, datasetBuilder);
         return datasetBuilder.build();
+    }
+
+    public static RemoteViews newRemoteViews(String packageName, String remoteViewsText) {
+        RemoteViews presentation = new RemoteViews(packageName, R.layout.list_item);
+        presentation.setTextViewText(R.id.text1, remoteViewsText);
+        return presentation;
     }
 
     /**
      * Wraps autofill data in a Response object (essentially a series of Datasets) which can then
      * be sent back to the client View.
      */
-    public static FillResponse newCredentialsResponse(Context context,
-            boolean datasetAuth, AutofillId usernameId, AutofillId passwordId,
-            Map<String, LoginCredential> credentialsMap) {
+    public static FillResponse newResponse(Context context,
+            boolean datasetAuth, AutofillFieldsCollection autofillFields, int saveType,
+            HashMap<String, ClientFormData> clientFormDataMap) {
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
-        if (usernameId == null || passwordId == null ||
-                credentialsMap == null || credentialsMap.isEmpty()) {
-            // Activity does not have usernameField and passwordField, can't do anything
-            return null;
-        } else {
-            int numReplies = 0;
-            Set<Map.Entry<String, LoginCredential>> credentialSet = credentialsMap.entrySet();
-            for (Map.Entry<String, LoginCredential> credential : credentialSet) {
+        if (clientFormDataMap != null) {
+            Set<String> datasetNames = clientFormDataMap.keySet();
+            for (String datasetName : datasetNames) {
+                ClientFormData clientFormData = clientFormDataMap.get(datasetName);
                 if (datasetAuth) {
-                    String datasetName = credential.getKey();
-                    RemoteViews presentation = new RemoteViews(context.getPackageName(),
-                            R.layout.list_item);
-                    presentation.setTextViewText(R.id.text1, datasetName);
-                    Dataset.Builder datasetBuilder = new Dataset.Builder(presentation);
-                    IntentSender sender =
-                            AuthActivity.getAuthIntentSenderForDataset(context, datasetName);
+                    Dataset.Builder datasetBuilder =
+                            new Dataset.Builder(newRemoteViews
+                                    (context.getPackageName(), clientFormData.getDatasetName()));
+                    IntentSender sender = AuthActivity
+                            .getAuthIntentSenderForDataset(context, clientFormData.getDatasetName());
                     datasetBuilder.setAuthentication(sender);
                     responseBuilder.addDataset(datasetBuilder.build());
                 } else {
-                    Dataset dataset = newCredentialDataset(context,
-                            credential.getValue(), usernameId, passwordId);
+                    Dataset dataset = newDataset(context, autofillFields, clientFormData);
                     responseBuilder.addDataset(dataset);
                 }
-                numReplies++;
             }
-            if (numReplies > 0) {
-                return responseBuilder.build();
-            } else {
-                Log.d(TAG, "No Autofill data found.");
-                return null;
-            }
+        }
+        if (saveType != 0) {
+            AutofillId[] autofillIds = autofillFields.getAutofillIds();
+            responseBuilder.setSaveInfo(new SaveInfo.Builder(saveType, autofillIds).build());
+            return responseBuilder.build();
+        } else {
+            Log.d(TAG, "These fields are not meant to be saved by autofill.");
+            return null;
         }
     }
 }

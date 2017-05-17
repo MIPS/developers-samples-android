@@ -27,14 +27,16 @@ import android.service.autofill.FillResponse;
 import android.service.autofill.SaveCallback;
 import android.service.autofill.SaveRequest;
 import android.util.Log;
-import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
 
 import com.example.android.autofillframework.R;
+import com.example.android.autofillframework.service.datasource.LocalAutofillRepository;
+import com.example.android.autofillframework.service.model.AutofillFieldsCollection;
+import com.example.android.autofillframework.service.model.ClientFormData;
+import com.example.android.autofillframework.service.settings.MyPreferences;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.example.android.autofillframework.CommonUtil.TAG;
 import static com.example.android.autofillframework.CommonUtil.bundleToString;
@@ -61,6 +63,7 @@ public class MyAutofillService extends AutofillService {
         Log.d(TAG, "onFillRequest(): data=" + bundleToString(data));
 
         // Temporary hack for disabling autofill for components in this autofill service.
+        // i.e. we don't want to autofill components in AuthActivity.
         if (structure.getActivityComponent().toShortString()
                 .contains("com.example.android.autofillframework.service")) {
             callback.onSuccess(null);
@@ -75,36 +78,28 @@ public class MyAutofillService extends AutofillService {
         // Parse AutoFill data in Activity
         StructureParser parser = new StructureParser(structure);
         parser.parse();
-        AutofillId usernameId = parser.getUsernameField().getId();
-        AutofillId passwordId = parser.getPasswordField().getId();
+        AutofillFieldsCollection autofillFields = parser.getAutofillFields();
+        int saveTypes = parser.getSaveTypes();
 
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
-        // Check user's settings for authenticating Responses and Datasets
+        // Check user's settings for authenticating Responses and Datasets.
         boolean responseAuth = MyPreferences.getInstance(this).isResponseAuth();
         if (responseAuth) {
             // If the entire Autofill Response is authenticated, AuthActivity is used
-            // to generate Response
+            // to generate Response.
             IntentSender sender = AuthActivity.getAuthIntentSenderForResponse(this);
-            RemoteViews presentation = new RemoteViews(getPackageName(), R.layout.list_item);
-            presentation.setTextViewText(R.id.text1, getString(R.string.autofill_sign_in_prompt));
-            responseBuilder.setAuthentication(new AutofillId[]{usernameId, passwordId},
-                    sender, presentation);
+            RemoteViews presentation = AutofillHelper
+                    .newRemoteViews(getPackageName(), getString(R.string.autofill_sign_in_prompt));
+            responseBuilder
+                    .setAuthentication(autofillFields.getAutofillIds(), sender, presentation);
             callback.onSuccess(responseBuilder.build());
         } else {
             boolean datasetAuth = MyPreferences.getInstance(this).isDatasetAuth();
-            Map<String, LoginCredential> credentialsMap =
-                    AutofillData.getInstance().getCredentialsMap(this);
-            if (usernameId == null || passwordId == null ||
-                    credentialsMap == null || credentialsMap.isEmpty()) {
-                // Activity does not have usernameField and passwordField fields, or service does not
-                // have any usernameField and passwordField autofill data.
-                Log.d(TAG, "No Autofill data found for this Activity");
-                callback.onSuccess(null);
-                return;
-            }
-
-            FillResponse response = AutofillHelper.newCredentialsResponse(
-                    this, datasetAuth, usernameId, passwordId, credentialsMap);
+            HashMap<String, ClientFormData> clientFormDataMap =
+                    LocalAutofillRepository.getInstance(this).getClientFormData
+                            (autofillFields.getFocusedHints(), autofillFields.getAllHints());
+            FillResponse response = AutofillHelper.newResponse
+                    (this, datasetAuth, autofillFields, saveTypes, clientFormDataMap);
             callback.onSuccess(response);
         }
     }
@@ -114,14 +109,11 @@ public class MyAutofillService extends AutofillService {
         List<FillContext> context = request.getFillContexts();
         final AssistStructure structure = context.get(context.size() - 1).getStructure();
         final Bundle data = request.getClientState();
-        Log.d(TAG, "onSaveFillRequest(): data=" + bundleToString(data));
+        Log.d(TAG, "onSaveRequest(): data=" + bundleToString(data));
         StructureParser parser = new StructureParser(structure);
         parser.parse();
-        String packageName = structure.getActivityComponent().getPackageName();
-        String username = parser.getUsernameField().getValue();
-        String password = parser.getPasswordField().getValue();
-        LoginCredential loginCredential = new LoginCredential(username, password);
-        AutofillData.getInstance().updateCredentials(packageName, loginCredential);
+        ClientFormData clientFormData = parser.getClientFormData();
+        LocalAutofillRepository.getInstance(this).saveClientFormData(clientFormData);
     }
 
     @Override

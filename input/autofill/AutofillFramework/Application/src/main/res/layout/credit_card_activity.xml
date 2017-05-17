@@ -32,40 +32,57 @@
         android:layout_gravity="center">
 
         <TextView
-            android:id="@+id/usernameLabel"
+            android:id="@+id/creditCardNumberLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
             android:importantForAutofill="no"
-            android:text="@string/username_label" />
+            android:text="@string/credit_card_number_label" />
 
         <EditText
-            android:id="@+id/usernameField"
+            android:id="@+id/creditCardNumberField"
             android:layout_width="200sp"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/usernameLabel"
-            android:layout_toEndOf="@id/usernameLabel"
-            android:autofillHints="username"
-            android:inputType="textPersonName" />
+            android:layout_alignBaseline="@+id/creditCardNumberLabel"
+            android:layout_toEndOf="@id/creditCardNumberLabel"
+            android:autofillHints="creditCardNumber" />
 
         <TextView
-            android:id="@+id/passwordLabel"
+            android:id="@+id/creditCardExpirationLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/usernameLabel"
-            android:layout_below="@+id/usernameLabel"
+            android:layout_alignStart="@+id/creditCardNumberLabel"
+            android:layout_below="@+id/creditCardNumberLabel"
             android:layout_marginTop="20dp"
             android:importantForAutofill="no"
-            android:text="@string/password_label" />
+            android:text="@string/credit_card_expiration_label" />
 
-        <EditText
-            android:id="@+id/passwordField"
-            android:layout_width="200sp"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/passwordLabel"
-            android:layout_alignStart="@+id/usernameField"
-            android:autofillHints="password"
-            android:inputType="textPassword" />
+            android:layout_alignBaseline="@+id/creditCardExpirationLabel"
+            android:layout_alignStart="@+id/creditCardNumberField"
+            android:orientation="horizontal">
+
+            <Spinner
+                android:id="@+id/expirationDay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:autofillHints="creditCardExpirationDay" />
+
+            <Spinner
+                android:id="@+id/expirationMonth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:autofillHints="creditCardExpirationMonth" />
+
+            <Spinner
+                android:id="@+id/expirationYear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:autofillHints="creditCardExpirationYear" />
+        </LinearLayout>
+
     </RelativeLayout>
 
     <LinearLayout
@@ -82,10 +99,10 @@
             android:text="Clear" />
 
         <Button
-            android:id="@+id/login"
+            android:id="@+id/submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Login" />
+            android:text="Submit" />
     </LinearLayout>
 
 </LinearLayout>

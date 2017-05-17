@@ -75,12 +75,7 @@ For further detail, read [Emoji Compatibility][1] documentation.
 You need to first initialize EmojiCompat to load the metadata and the typeface. You can use either
 bundled or downloadable fonts.
 
-#### Use bundled font
-
-In order the use the bundled font, call init() method of [EmojiCompat][2] with an instance of
-[BundledEmojiCompatConfig][3].
-
-### Use downloadable fonts
+#### Use downloadable fonts
 
 ***You need the beta version of Google Play Services to use this feature.*** Join
 [Google Play Services Public Beta Program][4] and make sure you have v11 installed on your device
@@ -113,6 +108,11 @@ EmojiCompat.init(new FontRequestEmojiCompatConfig(getApplicationContext(), fontR
                     });)
 ```
 
+#### Use bundled font
+
+In order the use the bundled font, call init() method of [EmojiCompat][2] with an instance of
+[BundledEmojiCompatConfig][3].
+
 ### Use EmojiCompat
 
 #### Built-in views
@@ -137,7 +137,7 @@ If you want to use EmojiCompat in your custom TextView, you can create an instan
 [1]: https://developer.android.com/preview/features/emoji-compat.html
 [2]: https://developer.android.com/reference/android/support/text/emoji/EmojiCompat.html
 [3]: https://developer.android.com/reference/android/support/text/emoji/bundled/BundledEmojiCompatConfig.html
-
+[4]: https://developers.google.com/android/guides/beta-program
 [5]: https://developer.android.com/reference/android/support/v4/provider/FontRequest.html
 [6]: https://developer.android.com/reference/android/support/text/emoji/FontRequestEmojiCompatConfig.html
 [7]: https://developer.android.com/reference/android/support/text/emoji/widget/EmojiAppCompatTextView.html

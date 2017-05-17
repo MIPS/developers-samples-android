@@ -58,6 +58,9 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * IMPORTANT NOTE: This watch face is optimized for Wear 1.x. If you want to see a Wear 2.0 watch
+ * face, check out AnalogComplicationWatchFaceService.java.
+ *
  * Sample digital watch face with blinking colons and seconds. In ambient mode, the seconds are
  * replaced with an AM/PM indicator and the colons don't blink. On devices with low-bit ambient
  * mode, the text is drawn without anti-aliasing in ambient mode. On devices which require burn-in

@@ -29,14 +29,17 @@ import android.text.Editable;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.autofill.AutofillId;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.android.autofillframework.R;
+import com.example.android.autofillframework.service.datasource.LocalAutofillRepository;
+import com.example.android.autofillframework.service.model.AutofillFieldsCollection;
+import com.example.android.autofillframework.service.model.ClientFormData;
+import com.example.android.autofillframework.service.settings.MyPreferences;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import static android.view.autofill.AutofillManager.EXTRA_ASSIST_STRUCTURE;
 import static android.view.autofill.AutofillManager.EXTRA_AUTHENTICATION_RESULT;
@@ -61,8 +64,7 @@ public class AuthActivity extends Activity {
 
     static IntentSender getAuthIntentSenderForResponse(Context context) {
         final Intent intent = new Intent(context, AuthActivity.class);
-        return PendingIntent.getActivity(context, 0, intent,
-                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_CANCEL_CURRENT)
+        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
                 .getIntentSender();
     }
 
@@ -71,8 +73,7 @@ public class AuthActivity extends Activity {
         intent.putExtra(EXTRA_DATASET_NAME, datasetName);
         intent.putExtra(EXTRA_FOR_RESPONSE, false);
         return PendingIntent.getActivity(context, ++sDatasetPendingIntentId, intent,
-                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_CANCEL_CURRENT)
-                .getIntentSender();
+                PendingIntent.FLAG_CANCEL_CURRENT).getIntentSender();
     }
 
     @Override
@@ -80,9 +81,9 @@ public class AuthActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.auth_activity);
-        mCancel = (Button) findViewById(R.id.cancel);
-        mLogin = (Button) findViewById(R.id.login);
-        mMasterPassword = (EditText) findViewById(R.id.master_password);
+        mCancel = findViewById(R.id.cancel);
+        mLogin = findViewById(R.id.login);
+        mMasterPassword = findViewById(R.id.master_password);
         mLogin.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,8 +103,10 @@ public class AuthActivity extends Activity {
 
     private void login() {
         Editable password = mMasterPassword.getText();
-        Log.d(TAG, "login: " + password);
-        if (password.length() == 0) {
+        Log.d(TAG, "PW entered: " + password);
+        Log.d(TAG, "Correct: " + MyPreferences.getInstance(AuthActivity.this).getMasterPassword());
+        if (password.toString()
+                .equals(MyPreferences.getInstance(AuthActivity.this).getMasterPassword())) {
             onSuccess();
         } else {
             Toast.makeText(this, "Password incorrect", Toast.LENGTH_SHORT).show();
@@ -133,33 +136,27 @@ public class AuthActivity extends Activity {
         AssistStructure structure = intent.getParcelableExtra(EXTRA_ASSIST_STRUCTURE);
         StructureParser parser = new StructureParser(structure);
         parser.parse();
-        AutofillId usernameId = parser.getUsernameField().getId();
-        AutofillId passwordId = parser.getPasswordField().getId();
-        Map<String, LoginCredential> loginCredentialMap =
-                AutofillData.getInstance().getCredentialsMap(this);
-        if (usernameId == null || passwordId == null || loginCredentialMap == null ||
-                loginCredentialMap.isEmpty()) {
-            Log.d(TAG, "No Autofill data found for this Activity.");
-            return;
-        }
+        AutofillFieldsCollection autofillFields = parser.getAutofillFields();
+        int saveTypes = parser.getSaveTypes();
         mReplyIntent = new Intent();
+        HashMap<String, ClientFormData> clientFormDataMap =
+                LocalAutofillRepository.getInstance(this).getClientFormData
+                        (autofillFields.getFocusedHints(), autofillFields.getAllHints());
         if (forResponse) {
-            // The response protected by auth, so we can send the entire response since we
-            // passed auth.
-            FillResponse response = AutofillHelper.newCredentialsResponse(this, false, usernameId,
-                    passwordId, loginCredentialMap);
-            if (response != null) {
-                mReplyIntent.putExtra(EXTRA_AUTHENTICATION_RESULT, response);
-            }
+            setResponseIntent(AutofillHelper.newResponse
+                    (this, false, autofillFields, saveTypes, clientFormDataMap));
         } else {
-            // The dataset selected by the user was protected by auth, so we can send that dataset.
             String datasetName = intent.getStringExtra(EXTRA_DATASET_NAME);
-            if (loginCredentialMap.containsKey(datasetName)) {
-                LoginCredential credential = loginCredentialMap.get(datasetName);
-                Dataset dataset = AutofillHelper
-                        .newCredentialDataset(this, credential, usernameId, passwordId);
-                mReplyIntent.putExtra(EXTRA_AUTHENTICATION_RESULT, dataset);
-            }
+            setDatasetIntent(AutofillHelper.newDataset
+                    (this, autofillFields, clientFormDataMap.get(datasetName)));
         }
+    }
+
+    private void setResponseIntent(FillResponse fillResponse) {
+        mReplyIntent.putExtra(EXTRA_AUTHENTICATION_RESULT, fillResponse);
+    }
+
+    private void setDatasetIntent(Dataset dataset) {
+        mReplyIntent.putExtra(EXTRA_AUTHENTICATION_RESULT, dataset);
     }
 }
