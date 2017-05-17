@@ -21,7 +21,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
-import com.example.android.wearable.wear.messaging.mock.MockDatabase;
 import com.example.android.wearable.wear.messaging.model.Profile;
 import com.example.android.wearable.wear.messaging.util.SharedPreferencesHelper;
 import com.google.android.gms.auth.api.Auth;
@@ -32,7 +31,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import java.io.IOException;
 
 /**
  * This activity should be extended for any activity that requires an authenticated user. This
@@ -58,15 +56,11 @@ public abstract class GoogleSignedInActivity extends WearableActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAmbientEnabled();
-        MockDatabase.init(this);
 
         // Try to get the user if they don't exist, return to sign in.
-        try {
-            mUser = SharedPreferencesHelper.readUserFromJsonPref(this);
-        } catch (IOException e) {
-            Log.e(TAG, "User is not stored locally");
-        }
+        mUser = SharedPreferencesHelper.readUserFromJsonPref(this);
         if (mUser == null) {
+            Log.e(TAG, "User is not stored locally");
             onGoogleSignInFailure();
         }
 

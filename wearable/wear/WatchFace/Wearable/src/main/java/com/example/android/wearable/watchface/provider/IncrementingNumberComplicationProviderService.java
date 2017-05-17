@@ -114,13 +114,6 @@ public class IncrementingNumberComplicationProviderService extends ComplicationP
         }
 
         if (complicationData != null) {
-            // In this case, we have the complication id and ask the system to update only that
-            // complication.
-            //
-            // You could also call ProviderUpdateRequester.requestUpdateAll() instead, which
-            // requests that the system call onComplicationUpdate on the specified provider for ALL
-            // active complications using that provider without requiring the id (a bit easier than
-            // tracking complication id throughout app).
             complicationManager.updateComplicationData(complicationId, complicationData);
 
         } else {

@@ -65,7 +65,6 @@ public class SignInActivity extends WearableActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
         setAmbientEnabled();
-        MockDatabase.init(this);
 
         // Configure Google Sign In
         GoogleSignInOptions.Builder builder =
@@ -141,14 +140,17 @@ public class SignInActivity extends WearableActivity
         mProfile = new Profile(acct);
 
         MockDatabase.getUser(
+                this,
                 mProfile.getId(),
+                // TODO: Move from anonymous class to improve readability. Nested callbacks is hard
+                // to read for me.
                 new MockDatabase.RetrieveUserCallback() {
                     @Override
                     public void retrieved(Profile user) {
                         if (user == null) {
                             // User did not exists so create the user.
-                            // Using mProfile since user is null
                             MockDatabase.createUser(
+                                    SignInActivity.this,
                                     mProfile,
                                     new MockDatabase.CreateUserCallback() {
                                         @Override

@@ -173,7 +173,7 @@ public class ChatActivity extends GoogleSignedInActivity {
                 .addOnPreDrawListener(new PrescrollToBottom(mRecyclerView, mAdapter));
 
         //TODO: move to background
-        mAdapter.addMessages(MockDatabase.getAllMessagesForChat(mChat.getId()));
+        mAdapter.addMessages(MockDatabase.getAllMessagesForChat(this, mChat.getId()));
         // Displays welcome message if no messages in chat.
         if (mAdapter.getItemCount() == 0) {
             mRecyclerView.setVisibility(View.GONE);
@@ -226,7 +226,7 @@ public class ChatActivity extends GoogleSignedInActivity {
     }
 
     private void sendMessage(Message message) {
-        MockDatabase.saveMessage(mChat, message);
+        MockDatabase.saveMessage(this, mChat, message);
         mAdapter.addMessage(message);
         mRecyclerView.smoothScrollToPosition(mAdapter.getItemCount());
 

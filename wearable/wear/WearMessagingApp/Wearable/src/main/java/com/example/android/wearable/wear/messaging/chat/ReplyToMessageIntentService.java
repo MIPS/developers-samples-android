@@ -27,7 +27,6 @@ import com.example.android.wearable.wear.messaging.model.Message;
 import com.example.android.wearable.wear.messaging.model.Profile;
 import com.example.android.wearable.wear.messaging.util.Constants;
 import com.example.android.wearable.wear.messaging.util.SharedPreferencesHelper;
-import java.io.IOException;
 import java.util.UUID;
 
 /** Handles replies directly from Notification. */
@@ -44,13 +43,12 @@ public class ReplyToMessageIntentService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        MockDatabase.init(this);
 
-        try {
-            mUser = SharedPreferencesHelper.readUserFromJsonPref(getApplicationContext());
-        } catch (IOException e) {
-            Log.e(TAG, "User is not stored locally");
-            throw new RuntimeException(e);
+        mUser = SharedPreferencesHelper.readUserFromJsonPref(getApplicationContext());
+        if (mUser == null) {
+            String message = "User is not stored locally.";
+            Log.e(TAG, message);
+            throw new RuntimeException(message);
         }
     }
 
@@ -81,12 +79,12 @@ public class ReplyToMessageIntentService extends IntentService {
                         .text(reply.toString())
                         .build();
 
-        MockDatabase.saveMessage(chat, message);
+        MockDatabase.saveMessage(this, chat, message);
     }
 
     private Chat extractChat(Intent intent) {
         String chatId = intent.getStringExtra(Constants.EXTRA_CHAT);
-        return MockDatabase.findChatById(chatId);
+        return MockDatabase.findChatById(this, chatId);
     }
 
     /*

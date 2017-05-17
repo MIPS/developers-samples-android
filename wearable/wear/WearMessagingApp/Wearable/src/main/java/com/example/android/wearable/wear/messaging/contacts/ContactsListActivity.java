@@ -73,7 +73,7 @@ public class ContactsListActivity extends GoogleSignedInActivity {
                         });
         mRecyclerView.setAdapter(mAdapter);
 
-        List<Profile> contacts = MockDatabase.getUserContacts();
+        List<Profile> contacts = MockDatabase.getUserContacts(this);
         mAdapter.addAll(contacts);
 
         mActionDrawer = (WearableActionDrawer) findViewById(R.id.bottom_action_drawer);

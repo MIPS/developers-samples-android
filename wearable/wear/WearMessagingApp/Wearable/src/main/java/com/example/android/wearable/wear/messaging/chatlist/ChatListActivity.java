@@ -31,7 +31,6 @@ import com.example.android.wearable.wear.messaging.model.Profile;
 import com.example.android.wearable.wear.messaging.util.Constants;
 import com.example.android.wearable.wear.messaging.util.DividerItemDecoration;
 import com.example.android.wearable.wear.messaging.util.SharedPreferencesHelper;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -75,15 +74,12 @@ public class ChatListActivity extends GoogleSignedInActivity {
         Log.d(TAG, "onStart");
 
         // Try to get the user if they don't exist, return to login.
-        try {
-            mUser = SharedPreferencesHelper.readUserFromJsonPref(this);
-        } catch (IOException e) {
-            Log.e(TAG, "User is not stored locally");
-        }
+        mUser = SharedPreferencesHelper.readUserFromJsonPref(this);
         if (mUser == null) {
+            Log.e(TAG, "User is not stored locally");
             onGoogleSignInFailure();
         } else {
-            mRecyclerAdapter.setChats(MockDatabase.getAllChats());
+            mRecyclerAdapter.setChats(MockDatabase.getAllChats(this));
         }
     }
 
@@ -121,7 +117,8 @@ public class ChatListActivity extends GoogleSignedInActivity {
                 ArrayList<Profile> contacts =
                         data.getParcelableArrayListExtra(Constants.RESULT_CONTACTS_KEY);
                 // TODO: this should be moved to the background,
-                Chat newChatWithSelectedContacts = MockDatabase.createChat(contacts, getUser());
+                Chat newChatWithSelectedContacts =
+                        MockDatabase.createChat(this, contacts, getUser());
 
                 Log.d(TAG, String.format("Starting chat with %d contact(s)", contacts.size()));
 

@@ -8,13 +8,13 @@ dependencies {
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:support-v13:25.3.1'
 
-    compile 'com.google.android.gms:play-services-wearable:10.2.1'
-    compile 'com.google.android.gms:play-services-auth:10.2.1'
+    compile 'com.google.android.gms:play-services-wearable:10.2.4'
+    compile 'com.google.android.gms:play-services-auth:10.2.4'
 
     provided 'com.google.android.wearable:wearable:2.0.1'
     compile 'com.google.android.support:wearable:2.0.1'
 
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
+    compile 'com.google.code.gson:gson:2.8.0'
 
     compile 'com.github.bumptech.glide:glide:3.7.0'
 }

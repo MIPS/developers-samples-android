@@ -25,9 +25,9 @@ import android.os.Bundle;
 import android.support.wearable.complications.ProviderUpdateRequester;
 
 /**
- * Simple {@link BroadcastReceiver} subclass for asynchronously incrementing a integer for any
- * complication id triggered via TapAction on complication. Also, provides static method to create
- * {@link PendingIntent} the triggers this receiver.
+ * Simple {@link BroadcastReceiver} subclass for asynchronously incrementing an integer for any
+ * complication id triggered via TapAction on complication. Also, provides static method to create a
+ * {@link PendingIntent} that triggers this receiver.
  */
 public class ComplicationToggleReceiver extends BroadcastReceiver {
 
@@ -52,6 +52,7 @@ public class ComplicationToggleReceiver extends BroadcastReceiver {
 
         int value = sharedPreferences.getInt(preferenceKey, 0);
 
+        // Updates data for complication.
         value = (value + 1) % MAX_NUMBER;
 
         SharedPreferences.Editor editor = sharedPreferences.edit();

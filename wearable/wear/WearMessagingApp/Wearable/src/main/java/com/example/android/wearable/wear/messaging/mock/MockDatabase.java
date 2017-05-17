@@ -24,7 +24,6 @@ import com.example.android.wearable.wear.messaging.model.Chat;
 import com.example.android.wearable.wear.messaging.model.Message;
 import com.example.android.wearable.wear.messaging.model.Profile;
 import com.example.android.wearable.wear.messaging.util.SharedPreferencesHelper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,8 +38,6 @@ import java.util.TreeSet;
 public class MockDatabase {
 
     private static final String TAG = "MockDatabase";
-
-    private static Context mContext;
 
     /** A callback for events when retrieving a user asynchronously */
     public interface RetrieveUserCallback {
@@ -57,21 +54,13 @@ public class MockDatabase {
     }
 
     /**
-     * Initializes the mock database with a context for use with {@link
-     * android.content.SharedPreferences}
-     */
-    public static void init(Context context) {
-        mContext = context;
-    }
-
-    /**
      * Creates a chat and stores it in the mock database
      *
      * @param participants of the chat
      * @param user that has started the chat
      * @return a chat with information attached to it
      */
-    public static Chat createChat(Collection<Profile> participants, Profile user) {
+    public static Chat createChat(Context context, Collection<Profile> participants, Profile user) {
         int size = participants.size();
         Log.d(TAG, String.format("Creating a new chat with %d participant(s)", size));
 
@@ -92,7 +81,7 @@ public class MockDatabase {
         chat.setId(concat(participantMap.keySet()));
 
         // If you start a new chat with someone you already have a chat with, reuse that chat
-        Collection<Chat> allChats = getAllChats();
+        Collection<Chat> allChats = getAllChats(context);
         Chat exists = findChat(allChats, chat.getId());
         if (exists != null) {
             chat = exists;
@@ -100,17 +89,13 @@ public class MockDatabase {
             allChats.add(chat);
         }
 
-        persistsChats(allChats);
+        persistsChats(context, allChats);
 
         return chat;
     }
 
-    private static void persistsChats(Collection<Chat> chats) {
-        try {
-            SharedPreferencesHelper.writeChatsToJsonPref(mContext, new ArrayList<>(chats));
-        } catch (JsonProcessingException e) {
-            Log.e(TAG, "Could not write chats to json", e);
-        }
+    private static void persistsChats(Context context, Collection<Chat> chats) {
+        SharedPreferencesHelper.writeChatsToJsonPref(context, new ArrayList<>(chats));
     }
 
     @Nullable
@@ -130,10 +115,9 @@ public class MockDatabase {
      *
      * @return a collection of chats
      */
-    public static Collection<Chat> getAllChats() {
-
+    public static Collection<Chat> getAllChats(Context context) {
         try {
-            return SharedPreferencesHelper.readChatsFromJsonPref(mContext);
+            return SharedPreferencesHelper.readChatsFromJsonPref(context);
         } catch (IOException e) {
             Log.e(TAG, "Could not read/unmarshall the list of chats from shared preferences", e);
             return Collections.emptyList();
@@ -147,8 +131,8 @@ public class MockDatabase {
      * @return chat with id or null if no chat has that id
      */
     @Nullable
-    public static Chat findChatById(String id) {
-        return findChat(getAllChats(), id);
+    public static Chat findChatById(Context context, String id) {
+        return findChat(getAllChats(context), id);
     }
 
     /**
@@ -157,8 +141,8 @@ public class MockDatabase {
      * @param chat to be updated.
      * @param lastMessage to be updated on the chat.
      */
-    public static void updateLastMessage(Chat chat, Message lastMessage) {
-        Collection<Chat> chats = getAllChats();
+    private static void updateLastMessage(Context context, Chat chat, Message lastMessage) {
+        Collection<Chat> chats = getAllChats(context);
         // Update reference of chat to what it is the mock database.
         chat = findChat(chats, chat.getId());
         if (chat != null) {
@@ -166,7 +150,7 @@ public class MockDatabase {
         }
 
         // Save all chats since share prefs are managing them as one entity instead of individually.
-        persistsChats(chats);
+        persistsChats(context, chats);
     }
 
     /**
@@ -197,21 +181,17 @@ public class MockDatabase {
      * @param message that was sent in the chat.
      * @return message with {@link Message#sentTime} updated
      */
-    public static Message saveMessage(Chat chat, Message message) {
+    public static Message saveMessage(Context context, Chat chat, Message message) {
 
         message.setSentTime(System.currentTimeMillis());
 
-        updateLastMessage(chat, message);
+        updateLastMessage(context, chat, message);
 
-        Collection<Message> messages = getAllMessagesForChat(chat.getId());
+        Collection<Message> messages = getAllMessagesForChat(context, chat.getId());
         messages.add(message);
 
-        try {
-            SharedPreferencesHelper.writeMessagesForChatToJsonPref(
-                    mContext, chat, new ArrayList<>(messages));
-        } catch (JsonProcessingException e) {
-            Log.e(TAG, "Could not write the list of messages to shared preferences", e);
-        }
+        SharedPreferencesHelper.writeMessagesForChatToJsonPref(
+                context, chat, new ArrayList<>(messages));
 
         return message;
     }
@@ -222,13 +202,8 @@ public class MockDatabase {
      * @param chatId of the conversation
      * @return messages in the conversation
      */
-    public static Collection<Message> getAllMessagesForChat(String chatId) {
-        try {
-            return SharedPreferencesHelper.readMessagesForChat(mContext, chatId);
-        } catch (IOException e) {
-            Log.e(TAG, "Could not read/unmarshall the list of messages from shared preferences", e);
-            return Collections.emptyList();
-        }
+    public static Collection<Message> getAllMessagesForChat(Context context, String chatId) {
+        return SharedPreferencesHelper.readMessagesForChat(context, chatId);
     }
 
     /**
@@ -239,8 +214,8 @@ public class MockDatabase {
      * @return message from a chat
      */
     @Nullable
-    public static Message findMessageById(String chatId, String messageId) {
-        for (Message message : getAllMessagesForChat(chatId)) {
+    public static Message findMessageById(Context context, String chatId, String messageId) {
+        for (Message message : getAllMessagesForChat(context, chatId)) {
             if (message.getId().equals(messageId)) {
                 return message;
             }
@@ -254,28 +229,16 @@ public class MockDatabase {
      *
      * @return a list of profiles to be used as contacts
      */
-    public static List<Profile> getUserContacts() {
+    public static List<Profile> getUserContacts(Context context) {
 
-        try {
-            List<Profile> contacts = SharedPreferencesHelper.readContactsFromJsonPref(mContext);
-            if (!contacts.isEmpty()) {
-                return contacts;
-            }
-        } catch (IOException e) {
-            String logMessage =
-                    "Could not read/unmarshall the list of contacts from shared preferences. "
-                            + "Returning mock contacts.";
-            Log.e(TAG, logMessage, e);
+        List<Profile> contacts = SharedPreferencesHelper.readContactsFromJsonPref(context);
+        if (!contacts.isEmpty()) {
+            return contacts;
         }
 
         // Cannot find contacts so we will persist and return a default set of contacts.
         List<Profile> defaultContacts = MockObjectGenerator.generateDefaultContacts();
-        try {
-            Log.d(TAG, "saving default contacts");
-            SharedPreferencesHelper.writeContactsToJsonPref(mContext, defaultContacts);
-        } catch (JsonProcessingException e) {
-            Log.e(TAG, "Could not write the list of contacts to shared preferences", e);
-        }
+        SharedPreferencesHelper.writeContactsToJsonPref(context, defaultContacts);
         return defaultContacts;
     }
 
@@ -285,14 +248,8 @@ public class MockDatabase {
      * @param id for a user
      * @param callback used for handling asynchronous responses
      */
-    public static void getUser(String id, RetrieveUserCallback callback) {
-        Profile user = null;
-        try {
-            user = SharedPreferencesHelper.readUserFromJsonPref(mContext);
-        } catch (IOException e) {
-            Log.e(TAG, "Could not read/unmarshall the user from shared preferences.", e);
-            callback.error(e);
-        }
+    public static void getUser(Context context, String id, RetrieveUserCallback callback) {
+        Profile user = SharedPreferencesHelper.readUserFromJsonPref(context);
         if (user != null && user.getId().equals(id)) {
             callback.retrieved(user);
         } else {
@@ -308,14 +265,8 @@ public class MockDatabase {
      * @param user that needs to be created
      * @param callback used for handling asynchronous responses
      */
-    public static void createUser(Profile user, CreateUserCallback callback) {
-        try {
-            SharedPreferencesHelper.writeUserToJsonPref(mContext, user);
-            callback.onSuccess();
-        } catch (JsonProcessingException e) {
-            Log.e(TAG, "Could not write the user to shared preferences", e);
-            //Let the client know that the user cannot be saved
-            callback.onError(e);
-        }
+    public static void createUser(Context context, Profile user, CreateUserCallback callback) {
+        SharedPreferencesHelper.writeUserToJsonPref(context, user);
+        callback.onSuccess();
     }
 }

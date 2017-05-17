@@ -21,10 +21,11 @@ import android.util.Log;
 import com.example.android.wearable.wear.messaging.model.Chat;
 import com.example.android.wearable.wear.messaging.model.Message;
 import com.example.android.wearable.wear.messaging.model.Profile;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,19 +41,26 @@ public class SharedPreferencesHelper {
 
     private static final String TAG = "SharedPreferencesHelper";
 
-    private static ObjectMapper mMapper = new ObjectMapper();
+    private static Gson gson = new Gson();
 
     /**
      * Returns logged in user or null if no user is logged in.
      *
      * @param context shared preferences context
      * @return user profile
-     * @throws IOException
      */
-    public static Profile readUserFromJsonPref(Context context) throws IOException {
+    public static Profile readUserFromJsonPref(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFS_NAME, 0);
         String profileString = sharedPreferences.getString(Constants.PREFS_USER_KEY, null);
-        return profileString != null ? mMapper.readValue(profileString, Profile.class) : null;
+        if (profileString == null) {
+            return null;
+        }
+        try {
+            return gson.fromJson(profileString, Profile.class);
+        } catch (JsonSyntaxException e) {
+            Log.e(TAG, "Could not parse user from shard preferences.", e);
+            return null;
+        }
     }
 
     /**
@@ -60,13 +68,11 @@ public class SharedPreferencesHelper {
      *
      * @param context used to access {@link SharedPreferences}
      * @param user to be stored in preferences
-     * @throws JsonProcessingException if object cannot be written to preferences
      */
-    public static void writeUserToJsonPref(Context context, Profile user)
-            throws JsonProcessingException {
+    public static void writeUserToJsonPref(Context context, Profile user) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREFS_NAME, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Constants.PREFS_USER_KEY, mMapper.writeValueAsString(user));
+        editor.putString(Constants.PREFS_USER_KEY, gson.toJson(user));
         editor.apply();
     }
 
@@ -75,10 +81,16 @@ public class SharedPreferencesHelper {
      *
      * @param context used to access {@link SharedPreferences}
      * @return contacts from preferences
-     * @throws IOException if there is an error parsing the json from preferences
      */
-    public static List<Profile> readContactsFromJsonPref(Context context) throws IOException {
-        return getList(context, Profile.class, Constants.PREFS_CONTACTS_KEY);
+    public static List<Profile> readContactsFromJsonPref(Context context) {
+        try {
+            return getList(context, Profile.class, Constants.PREFS_CONTACTS_KEY);
+        } catch (JsonSyntaxException e) {
+            String logMessage =
+                    "Could not read/unmarshall the list of contacts from shared preferences.";
+            Log.e(TAG, logMessage, e);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -86,10 +98,8 @@ public class SharedPreferencesHelper {
      *
      * @param context used to access {@link SharedPreferences}
      * @param contacts to be stored in preferences
-     * @throws JsonProcessingException if objects cannot be marshalled to json
      */
-    public static void writeContactsToJsonPref(Context context, List<Profile> contacts)
-            throws JsonProcessingException {
+    public static void writeContactsToJsonPref(Context context, List<Profile> contacts) {
         setList(context, contacts, Constants.PREFS_CONTACTS_KEY);
     }
 
@@ -101,7 +111,12 @@ public class SharedPreferencesHelper {
      * @throws IOException if there is an error parsing the json from preferences
      */
     public static List<Chat> readChatsFromJsonPref(Context context) throws IOException {
-        return getList(context, Chat.class, Constants.PREFS_CHATS_KEY);
+        try {
+            return getList(context, Chat.class, Constants.PREFS_CHATS_KEY);
+        } catch (JsonSyntaxException e) {
+            Log.e(TAG, "Could not read/unmarshall the list of chats from shared preferences", e);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -109,10 +124,8 @@ public class SharedPreferencesHelper {
      *
      * @param context used to access {@link SharedPreferences}
      * @param chats to be stores in preferences
-     * @throws JsonProcessingException if objects cannot be marshalled to json
      */
-    public static void writeChatsToJsonPref(Context context, List<Chat> chats)
-            throws JsonProcessingException {
+    public static void writeChatsToJsonPref(Context context, List<Chat> chats) {
         Log.d(TAG, String.format("Saving %d chat(s)", chats.size()));
         setList(context, chats, Constants.PREFS_CHATS_KEY);
     }
@@ -123,11 +136,14 @@ public class SharedPreferencesHelper {
      * @param context used to access {@link SharedPreferences}
      * @param chatId for the chat the messages are from
      * @return messages from preferences
-     * @throws IOException if there is an error parsing the json from preferences
      */
-    public static List<Message> readMessagesForChat(Context context, String chatId)
-            throws IOException {
-        return getList(context, Message.class, Constants.PREFS_MESSAGE_PREFIX + chatId);
+    public static List<Message> readMessagesForChat(Context context, String chatId) {
+        try {
+            return getList(context, Message.class, Constants.PREFS_MESSAGE_PREFIX + chatId);
+        } catch (JsonSyntaxException e) {
+            Log.e(TAG, "Could not read/unmarshall the list of messages from shared preferences", e);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -136,10 +152,9 @@ public class SharedPreferencesHelper {
      * @param context used to access {@link SharedPreferences}
      * @param chat that the messages are from
      * @param messages to be stored into preferences
-     * @throws JsonProcessingException if objects cannot be marshalled to json
      */
     public static void writeMessagesForChatToJsonPref(
-            Context context, Chat chat, List<Message> messages) throws JsonProcessingException {
+            Context context, Chat chat, List<Message> messages) {
         setList(context, messages, Constants.PREFS_MESSAGE_PREFIX + chat.getId());
     }
 
@@ -154,10 +169,9 @@ public class SharedPreferencesHelper {
      *     clazz that was supplied
      * @return a list of <T> objects that were stored in shared preferences. Returns an empty list
      *     if no data is available.
-     * @throws IOException if the string cannot unmarshall into the object <T>
      */
     private static <T> List<T> getList(Context context, Class<T> clazz, String key)
-            throws IOException {
+            throws JsonSyntaxException {
         SharedPreferences sharedPreferences =
                 context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
         Set<String> contactsSet = sharedPreferences.getStringSet(key, new HashSet<String>());
@@ -167,7 +181,7 @@ public class SharedPreferencesHelper {
         }
         List<T> list = new ArrayList<>(contactsSet.size());
         for (String contactString : contactsSet) {
-            list.add(mMapper.readValue(contactString, clazz));
+            list.add(gson.fromJson(contactString, clazz));
         }
         return list;
     }
@@ -180,17 +194,15 @@ public class SharedPreferencesHelper {
      * @param list of <T> object that need to be persisted
      * @param key the key in shared preferences which the string set will be stored
      * @param <T> type the of object we will be marshalling and persisting
-     * @throws JsonProcessingException if the object cannot be written to a string
      */
-    private static <T> void setList(Context context, List<T> list, String key)
-            throws JsonProcessingException {
+    private static <T> void setList(Context context, List<T> list, String key) {
         SharedPreferences sharedPreferences =
                 context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         Set<String> strings = new LinkedHashSet<>(list.size());
         for (T t : list) {
-            strings.add(mMapper.writeValueAsString(t));
+            strings.add(gson.toJson(t));
         }
         editor.putStringSet(key, strings);
         editor.apply();

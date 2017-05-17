@@ -52,19 +52,18 @@ public class MockIncomingMessageReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "onReceive(): " + intent);
-        MockDatabase.init(context);
         mNotificationManagerCompat = NotificationManagerCompat.from(context);
 
         String chatId = intent.getStringExtra(Constants.EXTRA_CHAT);
         String messageId = intent.getStringExtra(Constants.EXTRA_MESSAGE);
 
-        Chat chat = MockDatabase.findChatById(chatId);
+        Chat chat = MockDatabase.findChatById(context, chatId);
         if (chat == null) {
             Log.e(TAG, "Could not find chat with id " + chatId);
             return;
         }
 
-        Message message = MockDatabase.findMessageById(chatId, messageId);
+        Message message = MockDatabase.findMessageById(context, chatId, messageId);
         if (message == null) {
             Log.d(TAG, "No message found in chat with id " + messageId);
             return;
@@ -89,7 +88,7 @@ public class MockIncomingMessageReceiver extends BroadcastReceiver {
                         .text(mockReplyMessage + " " + message.getText())
                         .build();
 
-        MockDatabase.saveMessage(chat, replyMessage);
+        MockDatabase.saveMessage(context, chat, replyMessage);
 
         generateMessagingStyleNotification(context, chat, replyMessage);
     }
