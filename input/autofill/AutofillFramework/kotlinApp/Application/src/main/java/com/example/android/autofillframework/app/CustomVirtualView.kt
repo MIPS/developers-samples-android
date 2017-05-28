@@ -31,13 +31,9 @@ import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.EditText
 import android.widget.TextView
-
-import com.example.android.autofillframework.R
-
-import java.util.ArrayList
-import java.util.Arrays
-
 import com.example.android.autofillframework.CommonUtil.bundleToString
+import com.example.android.autofillframework.R
+import java.util.*
 
 
 /**
@@ -47,36 +43,23 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
 
     private val mLines = ArrayList<Line>()
     private val mItems = SparseArray<Item>()
-    private val mAfm: AutofillManager
+    private val mAfm: AutofillManager = context.getSystemService(AutofillManager::class.java)
 
     private var mFocusedLine: Line? = null
-    private val mTextPaint: Paint
-    private val mTextHeight: Int
-    private val mTopMargin: Int
-    private val mLeftMargin: Int
-    private val mVerticalGap: Int
-    private val mLineLength: Int
-    private val mFocusedColor: Int
-    private val mUnfocusedColor: Int
+    private val mTextPaint: Paint = Paint()
+    private val mTextHeight: Int = 90
+    private val mTopMargin: Int = 100
+    private val mLeftMargin: Int = 100
+    private val mVerticalGap: Int = 10
+    private val mLineLength: Int = mTextHeight + mVerticalGap
+    private val mFocusedColor: Int = Color.RED
+    private val mUnfocusedColor: Int = Color.BLACK
 
     private val mUsernameLine: Line
     private val mPasswordLine: Line
 
     init {
-
-        mAfm = context.getSystemService(AutofillManager::class.java)
-
-        mTextPaint = Paint()
-
-        mUnfocusedColor = Color.BLACK
-        mFocusedColor = Color.RED
         mTextPaint.style = Style.FILL
-        mTopMargin = 100
-        mLeftMargin = 100
-        mTextHeight = 90
-        mVerticalGap = 10
-
-        mLineLength = mTextHeight + mVerticalGap
         mTextPaint.textSize = mTextHeight.toFloat()
         mUsernameLine = addLine("usernameField", context.getString(R.string.username_label),
                 arrayOf(View.AUTOFILL_HINT_USERNAME), "         ", true)
@@ -168,13 +151,11 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
             val line = mLines[i]
             Log.d(TAG, "Line $i ranges from $lowerY to $upperY")
             if (lowerY <= y && y <= upperY) {
-                if (mFocusedLine != null) {
-                    Log.d(TAG, "Removing focus from " + mFocusedLine!!)
-                    mFocusedLine!!.changeFocus(false)
-                }
+                Log.d(TAG, "Removing focus from " + mFocusedLine)
+                mFocusedLine?.changeFocus(false)
                 Log.d(TAG, "Changing focus to " + line)
                 mFocusedLine = line
-                mFocusedLine!!.changeFocus(true)
+                mFocusedLine?.changeFocus(true)
                 invalidate()
                 break
             }
@@ -221,13 +202,8 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
 
         // Boundaries of the text field, relative to the CustomView
         internal val bounds = Rect()
-        var labelItem: Item
-        var fieldTextItem: Item
-
-        init {
-            this.labelItem = Item(this, ++nextId, null, View.AUTOFILL_TYPE_NONE, label, false, true)
-            this.fieldTextItem = Item(this, ++nextId, hints, View.AUTOFILL_TYPE_TEXT, text, true, sanitized)
-        }
+        var labelItem: Item = Item(this, ++nextId, null, View.AUTOFILL_TYPE_NONE, label, false, true)
+        var fieldTextItem: Item = Item(this, ++nextId, hints, View.AUTOFILL_TYPE_TEXT, text, true, sanitized)
 
         internal fun changeFocus(focused: Boolean) {
             fieldTextItem.focused = focused
@@ -249,7 +225,7 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
                 val absBounds = Rect(bounds.left + offset[0],
                         bounds.top + offset[1],
                         bounds.right + offset[0], bounds.bottom + offset[1])
-                Log.v(TAG, "getAbsCoordinates() for " + fieldTextItem.id + ": bounds=" + bounds
+                Log.v(TAG, "absCoordinates for " + fieldTextItem.id + ": bounds=" + bounds
                         + " offset: " + Arrays.toString(offset) + " absBounds: " + absBounds)
                 return absBounds
             }
