@@ -15,41 +15,36 @@
  */
 package com.example.android.autofillframework.app
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.View
 import android.widget.Toast
-
 import com.example.android.autofillframework.R
+import kotlinx.android.synthetic.main.virtual_login_activity.*
 
 
 class VirtualLoginActivity : AppCompatActivity() {
-
-    private var mCustomVirtualView: CustomVirtualView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.virtual_login_activity)
 
-        mCustomVirtualView = findViewById(R.id.custom_view) as CustomVirtualView
         findViewById(R.id.login).setOnClickListener { login() }
         findViewById(R.id.clear).setOnClickListener { resetFields() }
     }
 
     private fun resetFields() {
-        mCustomVirtualView!!.resetFields()
+        custom_view.resetFields()
     }
 
     /**
      * Emulates a login action.
      */
     private fun login() {
-        val username = mCustomVirtualView!!.usernameText.toString()
-        val password = mCustomVirtualView!!.passwordText.toString()
+        val username = custom_view.usernameText.toString()
+        val password = custom_view.passwordText.toString()
         val valid = isValidCredentials(username, password)
         if (valid) {
             val intent = WelcomeActivity.getStartActivityIntent(this@VirtualLoginActivity)

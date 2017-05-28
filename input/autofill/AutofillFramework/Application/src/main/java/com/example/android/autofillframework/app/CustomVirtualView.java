@@ -84,17 +84,19 @@ public class CustomVirtualView extends View {
         mLineLength = mTextHeight + mVerticalGap;
         mTextPaint.setTextSize(mTextHeight);
         mUsernameLine = addLine("usernameField", context.getString(R.string.username_label),
-                new String[] {View.AUTOFILL_HINT_USERNAME}, "         ", true);
+                new String[]{View.AUTOFILL_HINT_USERNAME}, "         ", true);
         mPasswordLine = addLine("passwordField", context.getString(R.string.password_label),
-                new String[] {View.AUTOFILL_HINT_PASSWORD}, "         ", false);
+                new String[]{View.AUTOFILL_HINT_PASSWORD}, "         ", false);
 
         Log.d(TAG, "Text height: " + mTextHeight);
     }
 
     @Override
     public void autofill(SparseArray<AutofillValue> values) {
-        // User has just selected a Dataset from the list of Autofill suggestions and the Dataset's
-        // AutofillValue gets passed into this method.
+        // User has just selected a Dataset from the list of autofill suggestions.
+        // The Dataset is comprised of a list of AutofillValues, with each AutofillValue meant
+        // to fill a specific autofillable view. Now we have to update the UI based on the
+        // AutofillValues in the list.
         Log.d(TAG, "autoFill(): " + values);
         for (int i = 0; i < values.size(); i++) {
             final int id = values.keyAt(i);
@@ -114,14 +116,18 @@ public class CustomVirtualView extends View {
         postInvalidate();
     }
 
+
     @Override
     public void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
-        // Build a ViewStructure to pack in AutoFillService requests.
+        // Build a ViewStructure that will get passed to the AutofillService by the framework
+        // when it is time to find autofill suggestions.
         structure.setClassName(getClass().getName());
         int childrenSize = mItems.size();
         Log.d(TAG, "onProvideAutofillVirtualStructure(): flags = " + flags + ", items = "
                 + childrenSize + ", extras: " + bundleToString(structure.getExtras()));
         int index = structure.addChildCount(childrenSize);
+        // Traverse through the view hierarchy, including virtual child views. For each view, we
+        // need to set the relevant autofill metadata and add it to the ViewStructure.
         for (int i = 0; i < childrenSize; i++) {
             Item item = mItems.valueAt(i);
             Log.d(TAG, "Adding new child at index " + index + ": " + item);

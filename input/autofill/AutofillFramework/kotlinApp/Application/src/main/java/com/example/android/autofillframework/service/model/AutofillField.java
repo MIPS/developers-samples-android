@@ -19,7 +19,6 @@ import android.app.assist.AssistStructure;
 import android.service.autofill.SaveInfo;
 import android.view.View;
 import android.view.autofill.AutofillId;
-import android.view.autofill.AutofillValue;
 
 /**
  * Class that represents a field that can be autofilled. It will contain a description

@@ -112,10 +112,13 @@ public final class ClientFormData {
                 continue;
             }
             for (int autofillFieldIndex = 0; autofillFieldIndex < autofillFields.size(); autofillFieldIndex++) {
+                SavedAutofillValue savedAutofillValue = hintMap.get(hint);
+                if (savedAutofillValue == null) {
+                    continue;
+                }
                 AutofillField autofillField = autofillFields.get(autofillFieldIndex);
                 AutofillId autofillId = autofillField.getId();
                 int autofillType = autofillField.getAutofillType();
-                SavedAutofillValue savedAutofillValue = hintMap.get(hint);
                 switch (autofillType) {
                     case View.AUTOFILL_TYPE_LIST:
                         int listValue = autofillField.getAutofillOptionIndex(savedAutofillValue.getTextValue());
