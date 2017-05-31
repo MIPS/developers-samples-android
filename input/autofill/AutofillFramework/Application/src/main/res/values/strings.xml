@@ -16,6 +16,7 @@
 -->
 
 <resources>
+    <string name="app_name">Autofill Sample</string>
     <string name="settings_name">Autofill Settings</string>
     <string name="username_label">Username</string>
     <string name="password_label">Password</string>

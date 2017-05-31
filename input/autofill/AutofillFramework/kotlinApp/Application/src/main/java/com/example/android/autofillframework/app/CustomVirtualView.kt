@@ -33,7 +33,7 @@ import android.widget.EditText
 import android.widget.TextView
 import com.example.android.autofillframework.CommonUtil.bundleToString
 import com.example.android.autofillframework.R
-import java.util.*
+import java.util.Arrays
 
 
 /**
@@ -72,21 +72,19 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
     override fun autofill(values: SparseArray<AutofillValue>) {
         // User has just selected a Dataset from the list of Autofill suggestions and the Dataset's
         // AutofillValue gets passed into this method.
-        Log.d(TAG, "autoFill(): " + values)
+        Log.d(TAG, "autofill(): " + values)
         for (i in 0..values.size() - 1) {
             val id = values.keyAt(i)
             val value = values.valueAt(i)
-            val item = mItems.get(id)
-            if (item == null) {
-                Log.w(TAG, "No item for id " + id)
-                return
+
+            mItems[id]?.let {
+                if (!it.editable) {
+                    Log.w(TAG, "Item for autofillId $id is not editable: $it")
+                    return@autofill
+                }
+                // Set the item's text to the text wrapped in the AutofillValue.
+                it.text = value.textValue
             }
-            if (!item.editable) {
-                Log.w(TAG, "Item for id $id is not editable: $item")
-                return
-            }
-            // Set the item's text to the text wrapped in the AutofillValue.
-            item.text = value.textValue
         }
         postInvalidate()
     }
@@ -121,9 +119,8 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
         Log.d(TAG, "onDraw: " + mLines.size + " lines; canvas:" + canvas)
         var x: Float
         var y = (mTopMargin + mLineLength).toFloat()
-        for (i in mLines.indices) {
+        for (line in mLines) {
             x = mLeftMargin.toFloat()
-            val line = mLines[i]
             Log.v(TAG, "Drawing '" + line + "' at " + x + "x" + y)
             mTextPaint.color = if (line.fieldTextItem.focused) mFocusedColor else mUnfocusedColor
             val readOnlyText = line.labelItem.text.toString() + ":  ["
@@ -184,7 +181,9 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
         return line
     }
 
-    private class Item internal constructor(val line: Line, val id: Int, val hints: Array<String>?, val type: Int, var text: CharSequence, val editable: Boolean, val sanitized: Boolean) {
+    private class Item internal constructor(val line: Line, val id: Int, val hints: Array<String>?,
+                                            val type: Int, var text: CharSequence,
+                                            val editable: Boolean, val sanitized: Boolean) {
         var focused = false
 
         override fun toString(): String {
@@ -198,7 +197,8 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
             get() = if (editable) EditText::class.java.name else TextView::class.java.name
     }
 
-    private inner class Line constructor(val idEntry: String, label: String, hints: Array<String>, text: String, sanitized: Boolean) {
+    private inner class Line constructor(val idEntry: String, label: String, hints: Array<String>,
+                                         text: String, sanitized: Boolean) {
 
         // Boundaries of the text field, relative to the CustomView
         internal val bounds = Rect()

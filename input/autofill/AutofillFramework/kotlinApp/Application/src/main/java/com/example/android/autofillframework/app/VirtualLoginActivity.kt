@@ -21,7 +21,9 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.example.android.autofillframework.R
-import kotlinx.android.synthetic.main.virtual_login_activity.*
+import kotlinx.android.synthetic.main.virtual_login_activity.clear
+import kotlinx.android.synthetic.main.virtual_login_activity.custom_view
+import kotlinx.android.synthetic.main.virtual_login_activity.login
 
 
 class VirtualLoginActivity : AppCompatActivity() {
@@ -31,8 +33,8 @@ class VirtualLoginActivity : AppCompatActivity() {
 
         setContentView(R.layout.virtual_login_activity)
 
-        findViewById(R.id.login).setOnClickListener { login() }
-        findViewById(R.id.clear).setOnClickListener { resetFields() }
+        login.setOnClickListener { submitLogin() }
+        clear.setOnClickListener { resetFields() }
     }
 
     private fun resetFields() {
@@ -42,7 +44,7 @@ class VirtualLoginActivity : AppCompatActivity() {
     /**
      * Emulates a login action.
      */
-    private fun login() {
+    private fun submitLogin() {
         val username = custom_view.usernameText.toString()
         val password = custom_view.passwordText.toString()
         val valid = isValidCredentials(username, password)

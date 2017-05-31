@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.autofillframework.service.datasource;
+package com.example.android.autofillframework.service.datasource
 
-import com.example.android.autofillframework.service.model.ClientFormData;
+import android.content.Context
+import com.example.android.autofillframework.service.model.ClientFormData
+import java.util.HashMap
 
-import java.util.HashMap;
-import java.util.List;
-
-public interface AutofillRepository {
+interface AutofillRepository {
 
     /**
      * Gets saved ClientFormData that contains some objects that can autofill fields with these
-     * {@code autofillHints}.
+     * `autofillHints`.
      */
-    HashMap<String, ClientFormData> getClientFormData(List<String> focusedAutofillHints,
-            List<String> allAutofillHints);
+    fun getClientFormData(context: Context, focusedAutofillHints: List<String>,
+            allAutofillHints: List<String>): HashMap<String, ClientFormData>?
 
     /**
      * Saves LoginCredential under this datasetName.
      */
-    void saveClientFormData(ClientFormData clientFormData);
+    fun saveClientFormData(context: Context, clientFormData: ClientFormData)
 
     /**
      * Clears all data.
      */
-    void clear();
+    fun clear(context: Context)
 }
