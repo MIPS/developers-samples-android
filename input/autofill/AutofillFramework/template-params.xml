@@ -37,7 +37,7 @@
     </strings>
 
     <!-- The basic templates have already been enabled. Uncomment more as desired. -->
-    <template src="base" />
+    <template src="base-build" />
 
     <metadata>
         <!-- Values: {DRAFT | PUBLISHED | INTERNAL | DEPRECATED | SUPERCEDED} -->
