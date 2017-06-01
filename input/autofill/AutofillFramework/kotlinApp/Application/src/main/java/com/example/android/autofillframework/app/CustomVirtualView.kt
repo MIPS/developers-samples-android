@@ -70,20 +70,21 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
     }
 
     override fun autofill(values: SparseArray<AutofillValue>) {
-        // User has just selected a Dataset from the list of Autofill suggestions and the Dataset's
-        // AutofillValue gets passed into this method.
+        // User has just selected a Dataset from the list of autofill suggestions.
+        // The Dataset is comprised of a list of AutofillValues, with each AutofillValue meant
+        // to fill a specific autofillable view. Now we have to update the UI based on the
+        // AutofillValues in the list.
         Log.d(TAG, "autofill(): " + values)
         for (i in 0..values.size() - 1) {
             val id = values.keyAt(i)
             val value = values.valueAt(i)
-
-            mItems[id]?.let {
-                if (!it.editable) {
-                    Log.w(TAG, "Item for autofillId $id is not editable: $it")
-                    return@autofill
+            mItems[id]?.let { item ->
+                if (item.editable) {
+                    // Set the item's text to the text wrapped in the AutofillValue.
+                    item.text = value.textValue
+                } else {
+                    Log.w(TAG, "Item for autofillId $id is not editable: $item")
                 }
-                // Set the item's text to the text wrapped in the AutofillValue.
-                it.text = value.textValue
             }
         }
         postInvalidate()

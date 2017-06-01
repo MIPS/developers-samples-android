@@ -97,8 +97,8 @@ class AuthActivity : Activity() {
         } else {
             val datasetName = intent.getStringExtra(EXTRA_DATASET_NAME)
             clientFormDataMap?.let {
-                it[datasetName]?.let {
-                    AutofillHelper.newDataset(this, autofillFields, it)?.let(this::setDatasetIntent)
+                it[datasetName]?.let { clientFormData ->
+                    AutofillHelper.newDataset(this, autofillFields, clientFormData, false)?.let(this::setDatasetIntent)
                 }
             }
         }
@@ -115,7 +115,7 @@ class AuthActivity : Activity() {
     companion object {
 
         // Unique autofillId for dataset intents.
-        private var sDatasetPendingIntentId = 0
+        private var datasetPendingIntentId = 0
 
         internal fun getAuthIntentSenderForResponse(context: Context): IntentSender {
             val intent = Intent(context, AuthActivity::class.java)
@@ -127,7 +127,7 @@ class AuthActivity : Activity() {
             val intent = Intent(context, AuthActivity::class.java)
             intent.putExtra(EXTRA_DATASET_NAME, datasetName)
             intent.putExtra(EXTRA_FOR_RESPONSE, false)
-            return PendingIntent.getActivity(context, ++sDatasetPendingIntentId, intent,
+            return PendingIntent.getActivity(context, ++datasetPendingIntentId, intent,
                     PendingIntent.FLAG_CANCEL_CURRENT).intentSender
         }
     }

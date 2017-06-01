@@ -76,7 +76,8 @@ class MyAutofillService : AutofillService() {
             callback.onSuccess(responseBuilder.build())
         } else {
             val datasetAuth = MyPreferences.isDatasetAuth(this)
-            val clientFormDataMap = SharedPrefsAutofillRepository.getClientFormData(this, autofillFields.focusedAutofillHints, autofillFields.allAutofillHints)
+            val clientFormDataMap = SharedPrefsAutofillRepository.getClientFormData(this,
+                    autofillFields.focusedAutofillHints, autofillFields.allAutofillHints)
             val response = AutofillHelper.newResponse(this, datasetAuth, autofillFields, clientFormDataMap)
             callback.onSuccess(response)
         }

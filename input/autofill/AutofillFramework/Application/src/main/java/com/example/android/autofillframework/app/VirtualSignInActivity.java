@@ -20,21 +20,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.autofill.AutofillManager;
 import android.widget.Toast;
 
 import com.example.android.autofillframework.R;
 
-public class LoginActivity extends AppCompatActivity {
 
-    private EditText mUsernameEditText;
-    private EditText mPasswordEditText;
-    private Button mLoginButton;
-    private Button mClearButton;
+public class VirtualSignInActivity extends AppCompatActivity {
+
+    private CustomVirtualView mCustomVirtualView;
+    private AutofillManager mAutofillManager;
 
     public static Intent getStartActivityIntent(Context context) {
-        Intent intent = new Intent(context, LoginActivity.class);
+        Intent intent = new Intent(context, VirtualSignInActivity.class);
         return intent;
     }
 
@@ -42,40 +40,47 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.login_activity);
+        setContentView(R.layout.virtual_login_activity);
 
-        mLoginButton = (Button) findViewById(R.id.login);
-        mClearButton = (Button) findViewById(R.id.clear);
-        mUsernameEditText = (EditText) findViewById(R.id.usernameField);
-        mPasswordEditText = (EditText) findViewById(R.id.passwordField);
-        mLoginButton.setOnClickListener(new View.OnClickListener() {
+        mCustomVirtualView = (CustomVirtualView) findViewById(R.id.custom_view);
+        findViewById(R.id.login).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 login();
             }
         });
-        mClearButton.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.clear).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 resetFields();
             }
         });
+        mAutofillManager = getSystemService(AutofillManager.class);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     private void resetFields() {
-        mUsernameEditText.setText("");
-        mPasswordEditText.setText("");
+        mCustomVirtualView.resetFields();
     }
 
     /**
      * Emulates a login action.
      */
     private void login() {
-        String username = mUsernameEditText.getText().toString();
-        String password = mPasswordEditText.getText().toString();
+        String username = mCustomVirtualView.getUsernameText().toString();
+        String password = mCustomVirtualView.getPasswordText().toString();
         boolean valid = isValidCredentials(username, password);
         if (valid) {
-            Intent intent = WelcomeActivity.getStartActivityIntent(LoginActivity.this);
+            Intent intent = WelcomeActivity.getStartActivityIntent(VirtualSignInActivity.this);
             startActivity(intent);
             finish();
         } else {

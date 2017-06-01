@@ -28,16 +28,16 @@ import java.util.HashMap
  * dataset name associated with it.
  */
 class ClientFormData constructor(var datasetName: String? = null,
-        private val hintMap: HashMap<String, MutableAutofillValue> = HashMap<String, MutableAutofillValue>()) {
+        private val hintMap: HashMap<String, SavableAutofillData> = HashMap<String, SavableAutofillData>()) {
 
     private val TAG = "ClientFormData"
 
     /**
      * Sets values for a list of autofillHints.
      */
-    fun setAutofillValuesForHints(autofillHints: Array<String>, autofillValue: MutableAutofillValue) {
+    fun setAutofillValuesForHints(autofillHints: Array<String>, autofillData: SavableAutofillData) {
         autofillHints.forEach { hint ->
-            hintMap[hint] = autofillValue
+            hintMap[hint] = autofillData
         }
     }
 
@@ -86,6 +86,10 @@ class ClientFormData constructor(var datasetName: String? = null,
         return setValueAtLeastOnce
     }
 
+    /**
+     * Returns whether this model contains autofill data that is relevant to any of the
+     * autofillHints that are passed in.
+     */
     fun helpsWithHints(autofillHints: List<String>): Boolean {
         for (autofillHint in autofillHints) {
             hintMap[autofillHint]?.let { savedAutofillValue ->
