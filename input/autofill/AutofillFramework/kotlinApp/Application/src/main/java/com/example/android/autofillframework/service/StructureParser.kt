@@ -22,12 +22,12 @@ import com.example.android.autofillframework.CommonUtil.TAG
 import com.example.android.autofillframework.service.model.AutofillField
 import com.example.android.autofillframework.service.model.AutofillFieldsCollection
 import com.example.android.autofillframework.service.model.ClientFormData
-import com.example.android.autofillframework.service.model.MutableAutofillValue
+import com.example.android.autofillframework.service.model.SavableAutofillData
 
 /**
  * Parser for an AssistStructure object. This is invoked when the Autofill Service receives an
- * AssistStructure from the client Activity, representing its View hierarchy. In this
- * sample, it parses the hierarchy and records
+ * AssistStructure from the client Activity, representing its View hierarchy. In this sample, it
+ * parses the hierarchy and collects autofill metadata from {@link ViewNode}s along the way.
  */
 internal class StructureParser(private val mStructure: AssistStructure) {
     val autofillFields = AutofillFieldsCollection()
@@ -64,7 +64,7 @@ internal class StructureParser(private val mStructure: AssistStructure) {
                     autofillFields.add(AutofillField(viewNode))
                 } else {
                     clientFormData.setAutofillValuesForHints(viewNode.autofillHints,
-                            MutableAutofillValue(viewNode))
+                            SavableAutofillData(viewNode))
                 }
             }
         }

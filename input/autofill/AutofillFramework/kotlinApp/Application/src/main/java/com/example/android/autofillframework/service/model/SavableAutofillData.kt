@@ -19,9 +19,9 @@ import android.app.assist.AssistStructure
 import android.view.autofill.AutofillValue
 
 /**
- * Mutable, JSON serializable data class containing the same data as an [AutofillValue].
+ * JSON serializable data class containing the same data as an [AutofillValue].
  */
-class MutableAutofillValue(viewNode: AssistStructure.ViewNode) {
+class SavableAutofillData(viewNode: AssistStructure.ViewNode) {
     var textValue: String? = null
     var dateValue: Long? = null
     var toggleValue: Boolean? = null

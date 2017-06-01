@@ -212,12 +212,14 @@ public void autofill(SparseArray<AutofillValue> values) {
         final int id = values.keyAt(i);
         final AutofillValue value = values.valueAt(i);
         final Item item = mItems.get(id);
-        if (item == null || !item.editable) {
-            // Component either not found or is not editable, so no-op.
-            return;
+        if (item != null && item.editable) {
+            // Set the item's text to the text wrapped in the AutofillValue.
+            item.text = value.getTextValue();
+        } else if (item == null) {
+            // Component not found, so no-op.
+        } else {
+            // Component not editable, so no-op.
         }
-        // Set the item's text to the text wrapped in the AutofillValue.
-        item.text = value.getTextValue();
     }
     postInvalidate();
 }

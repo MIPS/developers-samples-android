@@ -15,23 +15,23 @@
  */
 package com.example.android.autofillframework.app;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.android.autofillframework.R;
 
+public class StandardSignInActivity extends AppCompatActivity {
 
-public class VirtualLoginActivity extends AppCompatActivity {
-
-    private CustomVirtualView mCustomVirtualView;
+    private EditText mUsernameEditText;
+    private EditText mPasswordEditText;
 
     public static Intent getStartActivityIntent(Context context) {
-        Intent intent = new Intent(context, VirtualLoginActivity.class);
+        Intent intent = new Intent(context, StandardSignInActivity.class);
         return intent;
     }
 
@@ -39,37 +39,39 @@ public class VirtualLoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.virtual_login_activity);
-
-        mCustomVirtualView = (CustomVirtualView) findViewById(R.id.custom_view);
+        setContentView(R.layout.login_activity);
+        mUsernameEditText = findViewById(R.id.usernameField);
+        mPasswordEditText = findViewById(R.id.passwordField);
         findViewById(R.id.login).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 login();
             }
         });
         findViewById(R.id.clear).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 resetFields();
             }
         });
     }
 
     private void resetFields() {
-        mCustomVirtualView.resetFields();
+        mUsernameEditText.setText("");
+        mPasswordEditText.setText("");
     }
 
     /**
      * Emulates a login action.
      */
     private void login() {
-        String username = mCustomVirtualView.getUsernameText().toString();
-        String password = mCustomVirtualView.getPasswordText().toString();
+        String username = mUsernameEditText.getText().toString();
+        String password = mPasswordEditText.getText().toString();
         boolean valid = isValidCredentials(username, password);
         if (valid) {
-            Intent intent = WelcomeActivity.getStartActivityIntent(VirtualLoginActivity.this);
+            Intent intent = WelcomeActivity.getStartActivityIntent(StandardSignInActivity.this);
             startActivity(intent);
+            finish();
         } else {
             Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show();
         }

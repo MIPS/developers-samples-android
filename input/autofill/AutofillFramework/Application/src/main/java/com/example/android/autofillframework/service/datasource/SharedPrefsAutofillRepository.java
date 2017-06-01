@@ -20,37 +20,34 @@ import android.content.SharedPreferences;
 import android.util.ArraySet;
 
 import com.example.android.autofillframework.service.model.ClientFormData;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Singleton autofill data repository, that stores autofill fields to SharedPreferences.
- * DISCLAIMER, you should not store sensitive fields like user data unencrypted. This is only done
- * here for simplicity and learning purposes.
+ * Singleton autofill data repository that stores autofill fields to SharedPreferences.
+ * Disclaimer: you should not store sensitive fields like user data unencrypted. This is done
+ * here only for simplicity and learning purposes.
  */
-public class LocalAutofillRepository implements AutofillRepository {
+public class SharedPrefsAutofillRepository implements AutofillRepository {
     private static final String SHARED_PREF_KEY = "com.example.android.autofillframework.service";
     private static final String CLIENT_FORM_DATA_KEY = "loginCredentialDatasets";
     private static final String DATASET_NUMBER_KEY = "datasetNumber";
 
-    private static LocalAutofillRepository sInstance;
+    private static SharedPrefsAutofillRepository sInstance;
 
     private final SharedPreferences mPrefs;
 
-    // TODO prepend with autofill data set in Settings.
-    private LocalAutofillRepository(Context context) {
+    private SharedPrefsAutofillRepository(Context context) {
         mPrefs = context.getApplicationContext()
                 .getSharedPreferences(SHARED_PREF_KEY, Context.MODE_PRIVATE);
     }
 
-    public static LocalAutofillRepository getInstance(Context context) {
+    public static SharedPrefsAutofillRepository getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new LocalAutofillRepository(context);
+            sInstance = new SharedPrefsAutofillRepository(context);
         }
         return sInstance;
     }
@@ -58,40 +55,37 @@ public class LocalAutofillRepository implements AutofillRepository {
     @Override
     public HashMap<String, ClientFormData> getClientFormData(List<String> focusedAutofillHints,
             List<String> allAutofillHints) {
-        try {
-            // TODO use sqlite instead.
-            boolean hasDataForFocusedAutofillHints = false;
-            HashMap<String, ClientFormData> clientFormDataMap = new HashMap<>();
-            Set<String> clientFormDataStringSet = getAllAutofillDataStringSet();
-            for (String clientFormDataString : clientFormDataStringSet) {
-                ClientFormData clientFormData = ClientFormData
-                        .fromJson(new JSONObject(clientFormDataString));
-                if (clientFormData != null) {
-                    if (clientFormData.helpsWithHints(focusedAutofillHints)) {
-                        hasDataForFocusedAutofillHints = true;
-                    }
-                    if (clientFormData.helpsWithHints(allAutofillHints)) {
-                        clientFormDataMap.put(clientFormData.getDatasetName(), clientFormData);
-                    }
+        boolean hasDataForFocusedAutofillHints = false;
+        HashMap<String, ClientFormData> clientFormDataMap = new HashMap<>();
+        Set<String> clientFormDataStringSet = getAllAutofillDataStringSet();
+        for (String clientFormDataString : clientFormDataStringSet) {
+            ClientFormData clientFormData = new Gson().fromJson(clientFormDataString, ClientFormData.class);
+            if (clientFormData != null) {
+                if (clientFormData.helpsWithHints(focusedAutofillHints)) {
+                    // Saved data has data relevant to at least 1 of the hints associated with the
+                    // View in focus.
+                    hasDataForFocusedAutofillHints = true;
+                }
+                if (clientFormData.helpsWithHints(allAutofillHints)) {
+                    // Saved data has data relevant to at least 1 of these hints associated with any
+                    // of the Views in the hierarchy.
+                    clientFormDataMap.put(clientFormData.getDatasetName(), clientFormData);
                 }
             }
-            if (hasDataForFocusedAutofillHints) {
-                return clientFormDataMap;
-            } else {
-                return null;
-            }
-        } catch (JSONException e) {
+        }
+        if (hasDataForFocusedAutofillHints) {
+            return clientFormDataMap;
+        } else {
             return null;
         }
     }
 
     @Override
     public void saveClientFormData(ClientFormData clientFormData) {
-        //TODO use sqlite instead.
         String datasetName = "dataset-" + getDatasetNumber();
         clientFormData.setDatasetName(datasetName);
         Set<String> allAutofillData = getAllAutofillDataStringSet();
-        allAutofillData.add(clientFormData.toJson().toString());
+        allAutofillData.add(new Gson().toJson(clientFormData));
         saveAllAutofillDataStringSet(allAutofillData);
         incrementDatasetNumber();
     }

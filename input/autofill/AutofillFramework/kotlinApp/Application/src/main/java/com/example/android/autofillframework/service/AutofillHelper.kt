@@ -37,10 +37,14 @@ object AutofillHelper {
      * client View.
      */
     fun newDataset(context: Context, autofillFields: AutofillFieldsCollection,
-            clientFormData: ClientFormData): Dataset? {
+            clientFormData: ClientFormData, datasetAuth: Boolean): Dataset? {
         clientFormData.datasetName?.let { datasetName ->
             val datasetBuilder = Dataset.Builder(newRemoteViews(context.packageName, datasetName))
             val setValueAtLeastOnce = clientFormData.applyToFields(autofillFields, datasetBuilder)
+            if (datasetAuth) {
+                val sender = AuthActivity.getAuthIntentSenderForDataset(context, datasetName)
+                datasetBuilder.setAuthentication(sender)
+            }
             if (setValueAtLeastOnce) {
                 return datasetBuilder.build()
             }
@@ -65,18 +69,8 @@ object AutofillHelper {
         clientFormDataMap?.keys?.let { datasetNames ->
             for (datasetName in datasetNames) {
                 clientFormDataMap[datasetName]?.let { clientFormData ->
-                    if (datasetAuth) {
-                        clientFormData.datasetName?.let {
-                            val datasetBuilder = Dataset.Builder(newRemoteViews(context.packageName, it))
-                            val sender = AuthActivity
-                                    .getAuthIntentSenderForDataset(context, it)
-                            datasetBuilder.setAuthentication(sender)
-                            responseBuilder.addDataset(datasetBuilder.build())
-                        }
-                    } else {
-                        val dataset = newDataset(context, autofillFields, clientFormData)
-                        dataset?.let(responseBuilder::addDataset)
-                    }
+                    val dataset = newDataset(context, autofillFields, clientFormData, datasetAuth)
+                    dataset?.let(responseBuilder::addDataset)
                 }
             }
         }

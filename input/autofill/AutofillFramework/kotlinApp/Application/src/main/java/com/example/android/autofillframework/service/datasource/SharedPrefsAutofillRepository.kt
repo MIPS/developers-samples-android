@@ -24,9 +24,9 @@ import com.google.gson.reflect.TypeToken
 
 
 /**
- * Singleton autofill data repository, that stores autofill fields to SharedPreferences.
- * DISCLAIMER, you should not store sensitive fields like user data unencrypted. This is only done
- * here for simplicity and learning purposes.
+ * Singleton autofill data repository that stores autofill fields to SharedPreferences.
+ * Disclaimer: you should not store sensitive fields like user data unencrypted. This is done
+ * here only for simplicity and learning purposes.
  */
 object SharedPrefsAutofillRepository : AutofillRepository {
     private val SHARED_PREF_KEY = "com.example.android.autofillframework.service"
@@ -46,9 +46,13 @@ object SharedPrefsAutofillRepository : AutofillRepository {
             val type = object : TypeToken<ClientFormData>() {}.type
             Gson().fromJson<ClientFormData>(clientFormDataString, type)?.let { clientFormData ->
                 if (clientFormData.helpsWithHints(focusedAutofillHints)) {
+                    // Saved data has data relevant to at least 1 of the hints associated with the
+                    // View in focus.
                     hasDataForFocusedAutofillHints = true
                     clientFormData.datasetName?.let { datasetName ->
                         if (clientFormData.helpsWithHints(allAutofillHints)) {
+                            // Saved data has data relevant to at least 1 of these hints associated with any
+                            // of the Views in the hierarchy.
                             clientFormDataMap.put(datasetName, clientFormData)
                         }
                     }

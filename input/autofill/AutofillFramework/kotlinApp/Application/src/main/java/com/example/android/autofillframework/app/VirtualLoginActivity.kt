@@ -51,6 +51,7 @@ class VirtualLoginActivity : AppCompatActivity() {
         if (valid) {
             val intent = WelcomeActivity.getStartActivityIntent(this@VirtualLoginActivity)
             startActivity(intent)
+            finish()
         } else {
             Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
         }

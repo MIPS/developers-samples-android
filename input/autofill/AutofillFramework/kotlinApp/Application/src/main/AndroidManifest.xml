@@ -32,7 +32,6 @@
             android:taskAffinity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -40,32 +39,17 @@
             android:name=".app.LoginActivity"
             android:label="AF StandardLogin"
             android:taskAffinity=".LoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".app.VirtualLoginActivity"
             android:label="AF VirtualLogin"
             android:taskAffinity=".VirtualLoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".app.WelcomeActivity" />
         <activity
             android:name=".app.CreditCardActivity"
             android:label="AF CreditCard"
             android:taskAffinity=".CreditCardActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <!--
         Including launcher icon for Autofill Settings to convenience.
@@ -78,7 +62,6 @@
             android:taskAffinity=".SettingsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
