@@ -1,4 +1,3 @@
-
 Android PictureInPicture Sample (Kotlin)
 ===================================
 

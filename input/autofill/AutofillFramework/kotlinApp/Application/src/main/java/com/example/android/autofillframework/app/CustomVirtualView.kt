@@ -183,8 +183,8 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
     }
 
     private class Item internal constructor(val line: Line, val id: Int, val hints: Array<String>?,
-                                            val type: Int, var text: CharSequence,
-                                            val editable: Boolean, val sanitized: Boolean) {
+            val type: Int, var text: CharSequence,
+            val editable: Boolean, val sanitized: Boolean) {
         var focused = false
 
         override fun toString(): String {
@@ -199,7 +199,7 @@ class CustomVirtualView(context: Context, attrs: AttributeSet) : View(context, a
     }
 
     private inner class Line constructor(val idEntry: String, label: String, hints: Array<String>,
-                                         text: String, sanitized: Boolean) {
+            text: String, sanitized: Boolean) {
 
         // Boundaries of the text field, relative to the CustomView
         internal val bounds = Rect()

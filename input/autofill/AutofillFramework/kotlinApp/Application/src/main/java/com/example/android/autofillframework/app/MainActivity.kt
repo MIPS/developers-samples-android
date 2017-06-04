@@ -19,6 +19,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.example.android.autofillframework.R
 import kotlinx.android.synthetic.main.activity_main.creditCardCheckoutButton
+import kotlinx.android.synthetic.main.activity_main.standardLoginWithAutoCompleteButton
 import kotlinx.android.synthetic.main.activity_main.standardViewSignInButton
 import kotlinx.android.synthetic.main.activity_main.virtualViewSignInButton
 
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         standardViewSignInButton.setOnClickListener { standardViewSignIn() }
         virtualViewSignInButton.setOnClickListener { virtualViewSignIn() }
         creditCardCheckoutButton.setOnClickListener { creditCardCheckout() }
+        standardLoginWithAutoCompleteButton.setOnClickListener { standardAutoCompleteSignIn() }
     }
 
     private fun creditCardCheckout() {
@@ -41,12 +43,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun standardViewSignIn() {
-        val intent = LoginActivity.getStartActivityIntent(this)
+        val intent = StandardSignInActivity.getStartActivityIntent(this)
+        startActivity(intent)
+    }
+
+    private fun standardAutoCompleteSignIn() {
+        val intent = StandardAutoCompleteSignInActivity.getStartActivityIntent(this)
         startActivity(intent)
     }
 
     private fun virtualViewSignIn() {
-        val intent = VirtualLoginActivity.getStartActivityIntent(this)
+        val intent = VirtualSignInActivity.getStartActivityIntent(this)
         startActivity(intent)
     }
 }

@@ -40,26 +40,60 @@ import java.util.*
  */
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+
+        /** Intent action for media controls from Picture-in-Picture mode.  */
+        private val ACTION_MEDIA_CONTROL = "media_control"
+
+        /** Intent extra for media controls from Picture-in-Picture mode.  */
+        private val EXTRA_CONTROL_TYPE = "control_type"
+
+        /** The request code for play action PendingIntent.  */
+        private val REQUEST_PLAY = 1
+
+        /** The request code for pause action PendingIntent.  */
+        private val REQUEST_PAUSE = 2
+
+        /** The request code for info action PendingIntent.  */
+        private val REQUEST_INFO = 3
+
+        /** The intent extra value for play action.  */
+        private val CONTROL_TYPE_PLAY = 1
+
+        /** The intent extra value for pause action.  */
+        private val CONTROL_TYPE_PAUSE = 2
+
+    }
+
     /** The arguments to be used for Picture-in-Picture mode.  */
     private val mPictureInPictureArgs = PictureInPictureArgs()
 
     /** This shows the video.  */
-    private var mMovieView: MovieView? = null
+    private lateinit var mMovieView: MovieView
 
     /** The bottom half of the screen; hidden on landscape  */
-    private var mScrollView: ScrollView? = null
+    private lateinit var mScrollView: ScrollView
 
     /** A [BroadcastReceiver] to receive action item events from Picture-in-Picture mode.  */
-    private var mReceiver: BroadcastReceiver? = null
+    private val mReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent?) {
+            intent?.let { intent ->
+                if (intent.action != ACTION_MEDIA_CONTROL) {
+                    return
+                }
+
+                // This is where we are called back from Picture-in-Picture action items.
+                val controlType = intent.getIntExtra(EXTRA_CONTROL_TYPE, 0)
+                when (controlType) {
+                    CONTROL_TYPE_PLAY -> mMovieView.play()
+                    CONTROL_TYPE_PAUSE -> mMovieView.pause()
+                }
+            }
+        }
+    }
 
     private val labelPlay: String by lazy { getString(R.string.play) }
     private val labelPause: String by lazy { getString(R.string.pause) }
-
-    private val mOnClickListener = View.OnClickListener { view ->
-        when (view.id) {
-            R.id.pip -> minimize()
-        }
-    }
 
     /**
      * Callbacks from the [MovieView] showing the video playback.
@@ -137,21 +171,23 @@ class MainActivity : AppCompatActivity() {
         mScrollView = findViewById(R.id.scroll) as ScrollView
 
         // Set up the video; it automatically starts.
-        mMovieView?.setMovieListener(mMovieListener)
-        findViewById(R.id.pip).setOnClickListener(mOnClickListener)
+        mMovieView.setMovieListener(mMovieListener)
+        findViewById(R.id.pip).setOnClickListener { minimize() }
     }
 
     override fun onStop() {
         // On entering Picture-in-Picture mode, onPause is called, but not onStop.
         // For this reason, this is the place where we should pause the video playback.
-        mMovieView?.pause()
+        mMovieView.pause()
         super.onStop()
     }
 
     override fun onRestart() {
         super.onRestart()
         // Show the video controls so the video can be easily resumed.
-        mMovieView?.showControls()
+        if (!isInPictureInPictureMode) {
+            mMovieView.showControls()
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -171,28 +207,13 @@ class MainActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             // Starts receiving events from action items in PiP mode.
-            mReceiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent?) {
-                    if (intent == null || ACTION_MEDIA_CONTROL != intent.action) {
-                        return
-                    }
-
-                    // This is where we are called back from Picture-in-Picture action items.
-                    val controlType = intent.getIntExtra(EXTRA_CONTROL_TYPE, 0)
-                    when (controlType) {
-                        CONTROL_TYPE_PLAY -> mMovieView?.play()
-                        CONTROL_TYPE_PAUSE -> mMovieView?.pause()
-                    }
-                }
-            }
             registerReceiver(mReceiver, IntentFilter(ACTION_MEDIA_CONTROL))
         } else {
             // We are out of PiP mode. We can stop receiving events from it.
             unregisterReceiver(mReceiver)
-            mReceiver = null
             // Show the video controls if the video is not playing
-            if (mMovieView != null && !mMovieView!!.isPlaying) {
-                mMovieView!!.showControls()
+            if (!mMovieView.isPlaying) {
+                mMovieView.showControls()
             }
         }
     }
@@ -201,14 +222,10 @@ class MainActivity : AppCompatActivity() {
      * Enters Picture-in-Picture mode.
      */
     internal fun minimize() {
-        if (mMovieView == null) {
-            return
-        }
         // Hide the controls in picture-in-picture mode.
-        mMovieView!!.hideControls()
+        mMovieView.hideControls()
         // Calculate the aspect ratio of the PiP screen.
-        val aspectRatio = mMovieView!!.width.toFloat() / mMovieView!!.height
-        mPictureInPictureArgs.setAspectRatio(aspectRatio)
+        mPictureInPictureArgs.setAspectRatio(mMovieView.width.toFloat() / mMovieView.height)
         enterPictureInPictureMode(mPictureInPictureArgs)
     }
 
@@ -226,37 +243,13 @@ class MainActivity : AppCompatActivity() {
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
                     View.SYSTEM_UI_FLAG_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            mScrollView?.visibility = View.GONE
-            mMovieView?.setAdjustViewBounds(false)
+            mScrollView.visibility = View.GONE
+            mMovieView.setAdjustViewBounds(false)
         } else {
             decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            mScrollView?.visibility = View.VISIBLE
-            mMovieView?.setAdjustViewBounds(true)
+            mScrollView.visibility = View.VISIBLE
+            mMovieView.setAdjustViewBounds(true)
         }
-    }
-
-    companion object {
-
-        /** Intent action for media controls from Picture-in-Picture mode.  */
-        private val ACTION_MEDIA_CONTROL = "media_control"
-
-        /** Intent extra for media controls from Picture-in-Picture mode.  */
-        private val EXTRA_CONTROL_TYPE = "control_type"
-
-        /** The request code for play action PendingIntent.  */
-        private val REQUEST_PLAY = 1
-
-        /** The request code for pause action PendingIntent.  */
-        private val REQUEST_PAUSE = 2
-
-        /** The request code for info action PendingIntent.  */
-        private val REQUEST_INFO = 3
-
-        /** The intent extra value for play action.  */
-        private val CONTROL_TYPE_PLAY = 1
-
-        /** The intent extra value for pause action.  */
-        private val CONTROL_TYPE_PAUSE = 2
     }
 
 }

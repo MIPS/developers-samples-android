@@ -28,7 +28,7 @@ import kotlinx.android.synthetic.main.login_activity.passwordField
 import kotlinx.android.synthetic.main.login_activity.usernameField
 
 
-class LoginActivity : AppCompatActivity() {
+class StandardSignInActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
         val password = passwordField.text.toString()
         val valid = isValidCredentials(username, password)
         if (valid) {
-            val intent = WelcomeActivity.getStartActivityIntent(this@LoginActivity)
+            val intent = WelcomeActivity.getStartActivityIntent(this@StandardSignInActivity)
             startActivity(intent)
             finish()
         } else {
@@ -69,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
     companion object {
 
         fun getStartActivityIntent(context: Context): Intent {
-            val intent = Intent(context, LoginActivity::class.java)
+            val intent = Intent(context, StandardSignInActivity::class.java)
             return intent
         }
     }

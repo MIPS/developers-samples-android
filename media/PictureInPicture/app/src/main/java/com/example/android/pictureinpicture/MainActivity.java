@@ -185,8 +185,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        // Show the video controls so the video can be easily resumed.
-        mMovieView.showControls();
+        if (!isInPictureInPictureMode()) {
+            // Show the video controls so the video can be easily resumed.
+            mMovieView.showControls();
+        }
     }
 
     @Override

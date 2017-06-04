@@ -16,9 +16,9 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.android.autofillframework"
-          android:versionCode="1"
-          android:versionName="1.0">
+    package="com.example.android.autofillframework"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <application
         android:allowBackup="true"
@@ -36,14 +36,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".app.LoginActivity"
+            android:name=".app.StandardSignInActivity"
             android:label="AF StandardLogin"
-            android:taskAffinity=".LoginActivity">
+            android:taskAffinity=".StandardSignInActivity">
         </activity>
         <activity
-            android:name=".app.VirtualLoginActivity"
+            android:name=".app.StandardAutoCompleteSignInActivity"
+            android:label="AF StandardLogin"
+            android:taskAffinity=".StandardAutoCompleteSignInActivity" />
+        <activity
+            android:name=".app.VirtualSignInActivity"
             android:label="AF VirtualLogin"
-            android:taskAffinity=".VirtualLoginActivity">
+            android:taskAffinity=".VirtualSignInActivity">
+
         </activity>
         <activity android:name=".app.WelcomeActivity" />
         <activity

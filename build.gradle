@@ -129,6 +129,7 @@ List<String> samples = [
 "input/autofill/AutofillFramework",
 "views/EmojiCompat",
 "ui/fonts/DownloadableFonts",
+"wearable/wear/WearComplicationProvidersTestSuite",
 ]
 
 List<String> taskNames = [
