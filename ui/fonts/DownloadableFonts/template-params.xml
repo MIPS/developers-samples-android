@@ -47,7 +47,7 @@ Settings -> Apps -> Google Play Services)
     <template src="base-build" />
 
     <metadata>
-        <status>DRAFTED</status>
+        <status>PUBLISHED</status>
         <categories>UI, Android O Preview</categories>
         <technologies>Android</technologies>
         <languages>Java</languages>

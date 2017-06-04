@@ -26,7 +26,7 @@ import kotlinx.android.synthetic.main.virtual_login_activity.custom_view
 import kotlinx.android.synthetic.main.virtual_login_activity.login
 
 
-class VirtualLoginActivity : AppCompatActivity() {
+class VirtualSignInActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +49,7 @@ class VirtualLoginActivity : AppCompatActivity() {
         val password = custom_view.passwordText.toString()
         val valid = isValidCredentials(username, password)
         if (valid) {
-            val intent = WelcomeActivity.getStartActivityIntent(this@VirtualLoginActivity)
+            val intent = WelcomeActivity.getStartActivityIntent(this@VirtualSignInActivity)
             startActivity(intent)
             finish()
         } else {
@@ -68,7 +68,7 @@ class VirtualLoginActivity : AppCompatActivity() {
     companion object {
 
         fun getStartActivityIntent(context: Context): Intent {
-            val intent = Intent(context, VirtualLoginActivity::class.java)
+            val intent = Intent(context, VirtualSignInActivity::class.java)
             return intent
         }
     }
