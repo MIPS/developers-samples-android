@@ -30,7 +30,7 @@
         <has_handheld_app>true</has_handheld_app>
     </wearable>
 
-    <dependency>com.android.support:design:24.0.0</dependency>
+    <dependency>com.android.support:design:25.3.1</dependency>
 
     <dependency>com.google.android.gms:play-services-maps</dependency>
     <dependency>com.google.android.gms:play-services-location</dependency>

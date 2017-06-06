@@ -27,11 +27,8 @@
     <targetSdkVersion>25</targetSdkVersion>
     <targetSdkVersionWear>25</targetSdkVersionWear>
 
-    <dependency>com.google.android.support:wearable:2.0.2</dependency>
-    <dependency_wearable>com.android.support:palette-v7:25.2.0</dependency_wearable>
-
-    <preview_wearable_support_provided_dependency>com.google.android.wearable:wearable:2.0.2</preview_wearable_support_provided_dependency>
-    <preview_wearable_support_dependency>com.google.android.support:wearable:2.0.2</preview_wearable_support_dependency>
+    <dependency>com.google.android.support:wearable:2.0.3</dependency>
+    <dependency_wearable>com.android.support:palette-v7:25.3.1</dependency_wearable>
 
     <wearable>
         <has_handheld_app>true</has_handheld_app>
