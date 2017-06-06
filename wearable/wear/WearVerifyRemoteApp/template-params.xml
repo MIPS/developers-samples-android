@@ -30,7 +30,7 @@
         <has_handheld_app>true</has_handheld_app>
     </wearable>
 
-    <dependency>com.google.android.support:wearable:2.0.0</dependency>
+    <dependency>com.google.android.support:wearable:2.0.3</dependency>
 
     <!-- Include additional dependencies here.-->
     <!-- dependency>com.google.android.gms:play-services:5.0.+</dependency -->
