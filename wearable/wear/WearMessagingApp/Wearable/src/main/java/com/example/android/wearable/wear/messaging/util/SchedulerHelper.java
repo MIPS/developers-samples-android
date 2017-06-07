@@ -24,7 +24,6 @@ import android.util.Log;
 import com.example.android.wearable.wear.messaging.chat.MockIncomingMessageReceiver;
 import com.example.android.wearable.wear.messaging.model.Chat;
 import com.example.android.wearable.wear.messaging.model.Message;
-
 import java.util.concurrent.TimeUnit;
 
 /**

@@ -15,6 +15,7 @@
  */
 package com.example.android.wearable.wear.messaging;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -131,48 +132,13 @@ public class SignInActivity extends WearableActivity
     }
 
     /*
-     * Syncs with mock backend (shared preferences). You will want to put in your
-     * backend logic here.
+     * Syncs with mock backend (shared preferences). You will want to put in your backend logic here.
      */
     private void syncUserWithBackend(GoogleSignInAccount acct) {
-        Log.d(TAG, "syncUserWithBackend:" + acct.getId());
+        Log.d(TAG, "syncUserWithBackend():" + acct.getId());
 
         mProfile = new Profile(acct);
-
-        MockDatabase.getUser(
-                this,
-                mProfile.getId(),
-                // TODO: Move from anonymous class to improve readability. Nested callbacks is hard
-                // to read for me.
-                new MockDatabase.RetrieveUserCallback() {
-                    @Override
-                    public void retrieved(Profile user) {
-                        if (user == null) {
-                            // User did not exists so create the user.
-                            MockDatabase.createUser(
-                                    SignInActivity.this,
-                                    mProfile,
-                                    new MockDatabase.CreateUserCallback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            finishSuccessfulSignin();
-                                        }
-
-                                        @Override
-                                        public void onError(Exception e) {
-                                            setAuthFailedState();
-                                        }
-                                    });
-                        } else {
-                            finishSuccessfulSignin();
-                        }
-                    }
-
-                    @Override
-                    public void error(Exception e) {
-                        setAuthFailedState();
-                    }
-                });
+        MockDatabase.getUser(this, mProfile.getId(), new SimpleRetrieveUserCallback(this));
     }
 
     private void setAuthFailedState() {
@@ -207,5 +173,42 @@ public class SignInActivity extends WearableActivity
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
         Toast.makeText(this, R.string.connection_failed, Toast.LENGTH_SHORT).show();
+    }
+
+    private class SimpleRetrieveUserCallback implements MockDatabase.RetrieveUserCallback {
+
+        final Context mContext;
+
+        private SimpleRetrieveUserCallback(Context context) {
+            this.mContext = context;
+        }
+
+        @Override
+        public void onUserRetrieved(Profile user) {
+            if (user == null) {
+                // User did not exists so create the user.
+                MockDatabase.createUser(
+                        mContext,
+                        mProfile,
+                        new MockDatabase.CreateUserCallback() {
+                            @Override
+                            public void onSuccess() {
+                                finishSuccessfulSignin();
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                setAuthFailedState();
+                            }
+                        });
+            } else {
+                finishSuccessfulSignin();
+            }
+        }
+
+        @Override
+        public void error(Exception e) {
+            setAuthFailedState();
+        }
     }
 }
