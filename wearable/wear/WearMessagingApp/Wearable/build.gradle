@@ -8,15 +8,15 @@ dependencies {
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:support-v13:25.3.1'
 
-    compile 'com.google.android.gms:play-services-wearable:10.2.4'
-    compile 'com.google.android.gms:play-services-auth:10.2.4'
+    compile 'com.google.android.gms:play-services-wearable:10.2.6'
+    compile 'com.google.android.gms:play-services-auth:10.2.6'
 
-    provided 'com.google.android.wearable:wearable:2.0.1'
-    compile 'com.google.android.support:wearable:2.0.1'
+    provided 'com.google.android.wearable:wearable:2.0.2'
+    compile 'com.google.android.support:wearable:2.0.2'
 
     compile 'com.google.code.gson:gson:2.8.0'
 
-    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.github.bumptech.glide:glide:3.8.0'
 }
 
 // The sample build uses multiple directories to
