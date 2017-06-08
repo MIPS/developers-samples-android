@@ -15,10 +15,12 @@
  */
 package com.example.android.wearable.wear.messaging.chatlist;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.WearableRecyclerView;
 import android.util.Log;
 import com.example.android.wearable.wear.messaging.GoogleSignedInActivity;
@@ -30,15 +32,14 @@ import com.example.android.wearable.wear.messaging.model.Chat;
 import com.example.android.wearable.wear.messaging.model.Profile;
 import com.example.android.wearable.wear.messaging.util.Constants;
 import com.example.android.wearable.wear.messaging.util.DividerItemDecoration;
-import com.example.android.wearable.wear.messaging.util.SharedPreferencesHelper;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Displays list of active chats of user.
  *
  * <p>Uses a simple mocked backend solution with shared preferences.
- *
- * <p>TODO: Processes database activities on the UI thread, move to async.
  */
 public class ChatListActivity extends GoogleSignedInActivity {
 
@@ -47,9 +48,9 @@ public class ChatListActivity extends GoogleSignedInActivity {
     // Triggered by contact selection in ContactsListActivity.
     private static final int CONTACTS_SELECTED_REQUEST_CODE = 9004;
 
-    private WearableRecyclerView mRecyclerView;
     private ChatListAdapter mRecyclerAdapter;
-    private Profile mUser;
+    private RetrieveChatsAsyncTask mRetrieveChatsTask;
+    private CreateNewChatAsyncTask mCreateChatTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +58,8 @@ public class ChatListActivity extends GoogleSignedInActivity {
         setTheme(R.style.BlueTheme);
         setContentView(R.layout.activity_chat_list);
 
-        mRecyclerView = (WearableRecyclerView) findViewById(R.id.recycler_view);
+        WearableRecyclerView mRecyclerView =
+                (WearableRecyclerView) findViewById(R.id.recycler_view);
 
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, R.drawable.divider));
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -73,24 +75,31 @@ public class ChatListActivity extends GoogleSignedInActivity {
         super.onStart();
         Log.d(TAG, "onStart");
 
-        // Try to get the user if they don't exist, return to login.
-        mUser = SharedPreferencesHelper.readUserFromJsonPref(this);
-        if (mUser == null) {
-            Log.e(TAG, "User is not stored locally");
-            onGoogleSignInFailure();
-        } else {
-            mRecyclerAdapter.setChats(MockDatabase.getAllChats(this));
+        if (getUser() != null) {
+            mRetrieveChatsTask = new RetrieveChatsAsyncTask(this);
+            mRetrieveChatsTask.execute();
         }
     }
 
-    /**
-     * A handler for the adapter to launch the correct activities based on the type of item selected
-     */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mRetrieveChatsTask != null) {
+            mRetrieveChatsTask.cancel(true);
+            mRetrieveChatsTask = null;
+        }
+        if (mCreateChatTask != null) {
+            mCreateChatTask.cancel(true);
+            mCreateChatTask = null;
+        }
+    }
+
+    /** Launches the correct activities based on the type of item selected. */
     private class MyChatListAdapterListener implements ChatListAdapter.ChatAdapterListener {
 
-        private final WearableActivity activity;
+        private final Activity activity;
 
-        MyChatListAdapterListener(WearableActivity activity) {
+        MyChatListAdapterListener(Activity activity) {
             this.activity = activity;
         }
 
@@ -116,17 +125,61 @@ public class ChatListActivity extends GoogleSignedInActivity {
             if (resultCode == RESULT_OK) {
                 ArrayList<Profile> contacts =
                         data.getParcelableArrayListExtra(Constants.RESULT_CONTACTS_KEY);
-                // TODO: this should be moved to the background,
-                Chat newChatWithSelectedContacts =
-                        MockDatabase.createChat(this, contacts, getUser());
-
-                Log.d(TAG, String.format("Starting chat with %d contact(s)", contacts.size()));
-
-                // Launch ChatActivity with new chat.
-                Intent startChat = new Intent(this, ChatActivity.class);
-                startChat.putExtra(Constants.EXTRA_CHAT, newChatWithSelectedContacts);
-                startActivity(startChat);
+                mCreateChatTask = new CreateNewChatAsyncTask(this, getUser(), contacts);
+                mCreateChatTask.execute();
             }
+        }
+    }
+
+    private class RetrieveChatsAsyncTask extends AsyncTask<Void, Void, Collection<Chat>> {
+
+        final Context mContext;
+
+        private RetrieveChatsAsyncTask(Context context) {
+            this.mContext = context;
+        }
+
+        @Override
+        protected Collection<Chat> doInBackground(Void... params) {
+            return MockDatabase.getAllChats(mContext);
+        }
+
+        @Override
+        protected void onPostExecute(Collection<Chat> chats) {
+            super.onPostExecute(chats);
+            mRecyclerAdapter.setChats(chats);
+        }
+    }
+
+    private class CreateNewChatAsyncTask extends AsyncTask<Void, Void, Chat> {
+
+        final Context mContext;
+        final Profile mUser;
+        final List<Profile> mContacts;
+
+        CreateNewChatAsyncTask(Context context, Profile user, List<Profile> contacts) {
+            this.mContext = context;
+            this.mUser = user;
+            this.mContacts = contacts;
+        }
+
+        @Override
+        protected Chat doInBackground(Void... params) {
+            return MockDatabase.createChat(mContext, mContacts, mUser);
+        }
+
+        @Override
+        protected void onPostExecute(Chat chat) {
+            super.onPostExecute(chat);
+            Log.d(
+                    TAG,
+                    String.format(
+                            "Starting chat with %d partcipants(s)", chat.getParticipants().size()));
+
+            // Launch ChatActivity with new chat.
+            Intent startChat = new Intent(mContext, ChatActivity.class);
+            startChat.putExtra(Constants.EXTRA_CHAT, chat);
+            startActivity(startChat);
         }
     }
 }

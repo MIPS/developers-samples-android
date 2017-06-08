@@ -39,14 +39,14 @@ public class MockDatabase {
 
     private static final String TAG = "MockDatabase";
 
-    /** A callback for events when retrieving a user asynchronously */
+    /** Callback for retrieving a user asynchronously. */
     public interface RetrieveUserCallback {
-        void retrieved(Profile user);
+        void onUserRetrieved(Profile user);
 
         void error(Exception e);
     }
 
-    /** A callback for getting events during the creation of a user */
+    /** Callback for creating a user. */
     public interface CreateUserCallback {
         void onSuccess();
 
@@ -251,10 +251,10 @@ public class MockDatabase {
     public static void getUser(Context context, String id, RetrieveUserCallback callback) {
         Profile user = SharedPreferencesHelper.readUserFromJsonPref(context);
         if (user != null && user.getId().equals(id)) {
-            callback.retrieved(user);
+            callback.onUserRetrieved(user);
         } else {
             // Could not find user with that id.
-            callback.retrieved(null);
+            callback.onUserRetrieved(null);
         }
     }
 
