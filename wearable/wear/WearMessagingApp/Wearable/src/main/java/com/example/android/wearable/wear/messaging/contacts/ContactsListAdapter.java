@@ -222,6 +222,7 @@ public class ContactsListAdapter extends WearableRecyclerView.Adapter<RecyclerVi
      */
     public void addAll(List<Profile> contacts) {
         this.mContacts.addAll(contacts);
+        notifyDataSetChanged();
     }
 
     /**
