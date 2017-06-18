@@ -140,7 +140,7 @@ public class Profile implements Parcelable {
         if (!name.equals(profile.name)) {
             return false;
         }
-        if (!profileImageUri.equals(profile.profileImageUri)) {
+        if (profileImageUri != null && !profileImageUri.equals(profile.profileImageUri)) {
             return false;
         }
         return lastUpdatedTime != null

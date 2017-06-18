@@ -15,7 +15,9 @@
  */
 package com.example.android.wearable.wear.messaging.contacts;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -40,15 +42,12 @@ import java.util.List;
  * peek. Tapping the check returns the selected contacts/profiles.
  *
  * <p>The caller needs to provide the `ArrayList` of Profiles to display.
- *
- * <p>
  */
 public class ContactsListActivity extends GoogleSignedInActivity {
 
-    private WearableRecyclerView mRecyclerView;
-    private WearableActionDrawer mActionDrawer;
     private WearableDrawerLayout mDrawerLayout;
     private ContactsListAdapter mAdapter;
+    private FindContactsAsyncTask mContactsAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,10 +56,10 @@ public class ContactsListActivity extends GoogleSignedInActivity {
 
         mDrawerLayout = (WearableDrawerLayout) findViewById(R.id.drawer_layout);
 
-        mRecyclerView = (WearableRecyclerView) findViewById(R.id.recycler_list);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, R.drawable.divider));
+        WearableRecyclerView recyclerView = (WearableRecyclerView) findViewById(R.id.recycler_list);
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, R.drawable.divider));
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(layoutManager);
+        recyclerView.setLayoutManager(layoutManager);
 
         mAdapter =
                 new ContactsListAdapter(
@@ -71,16 +70,14 @@ public class ContactsListActivity extends GoogleSignedInActivity {
                                 mDrawerLayout.peekDrawer(Gravity.BOTTOM);
                             }
                         });
-        mRecyclerView.setAdapter(mAdapter);
+        recyclerView.setAdapter(mAdapter);
 
-        List<Profile> contacts = MockDatabase.getUserContacts(this);
-        mAdapter.addAll(contacts);
+        WearableActionDrawer actionDrawer =
+                (WearableActionDrawer) findViewById(R.id.bottom_action_drawer);
 
-        mActionDrawer = (WearableActionDrawer) findViewById(R.id.bottom_action_drawer);
-
-        Menu menu = mActionDrawer.getMenu();
+        Menu menu = actionDrawer.getMenu();
         MenuTinter.tintMenu(this, menu, R.color.blue_15);
-        mActionDrawer.setOnMenuItemClickListener(
+        actionDrawer.setOnMenuItemClickListener(
                 new WearableActionDrawer.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
@@ -88,12 +85,12 @@ public class ContactsListActivity extends GoogleSignedInActivity {
                     }
                 });
 
-        mActionDrawer.setBackgroundColor(ContextCompat.getColor(this, R.color.blue_65));
+        actionDrawer.setBackgroundColor(ContextCompat.getColor(this, R.color.blue_65));
 
         View peek =
                 getLayoutInflater()
                         .inflate(R.layout.drawer_check_confirmation, mDrawerLayout, false);
-        mActionDrawer.setPeekContent(peek);
+        actionDrawer.setPeekContent(peek);
 
         peek.findViewById(R.id.button_confirm)
                 .setOnClickListener(
@@ -112,6 +109,25 @@ public class ContactsListActivity extends GoogleSignedInActivity {
                                 cancelSelectingContacts();
                             }
                         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mContactsAsyncTask != null) {
+            mContactsAsyncTask.cancel(true);
+        }
+        mContactsAsyncTask = new FindContactsAsyncTask(this);
+        mContactsAsyncTask.execute();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mContactsAsyncTask != null) {
+            mContactsAsyncTask.cancel(true);
+        }
     }
 
     private boolean handleMenuItems(MenuItem menuItem) {
@@ -135,5 +151,31 @@ public class ContactsListActivity extends GoogleSignedInActivity {
     protected void cancelSelectingContacts() {
         setResult(RESULT_CANCELED);
         finish();
+    }
+
+    /**
+     * Since messaging apps will retrieve contacts remotely, {@link AsyncTask} will allow us to
+     * perform the expensive operation in the background and not block the main thread.
+     *
+     * <p>Retrieves the user's contacts and updates the adapter with the new list of contacts.
+     */
+    private class FindContactsAsyncTask extends AsyncTask<Void, Void, List<Profile>> {
+
+        private final Context mContext;
+
+        FindContactsAsyncTask(Context context) {
+            this.mContext = context;
+        }
+
+        @Override
+        protected List<Profile> doInBackground(Void... params) {
+            return MockDatabase.getUserContacts(mContext);
+        }
+
+        @Override
+        protected void onPostExecute(List<Profile> contacts) {
+            super.onPostExecute(contacts);
+            mAdapter.addAll(contacts);
+        }
     }
 }
