@@ -15,7 +15,9 @@
  */
 package com.example.android.wearable.wear.messaging.chat;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.v4.content.ContextCompat;
@@ -43,6 +45,9 @@ import com.example.android.wearable.wear.messaging.util.DividerItemDecoration;
 import com.example.android.wearable.wear.messaging.util.MenuTinter;
 import com.example.android.wearable.wear.messaging.util.PrescrollToBottom;
 import com.example.android.wearable.wear.messaging.util.SchedulerHelper;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -67,6 +72,8 @@ public class ChatActivity extends GoogleSignedInActivity {
     private InputMethodManager mInputMethodManager;
 
     private Chat mChat;
+    private FindChatsAsyncTask mFindChatsTask;
+    private SendMessageAsyncTask mSendMessageTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,15 +179,21 @@ public class ChatActivity extends GoogleSignedInActivity {
                 .getViewTreeObserver()
                 .addOnPreDrawListener(new PrescrollToBottom(mRecyclerView, mAdapter));
 
-        //TODO: move to background
-        mAdapter.addMessages(MockDatabase.getAllMessagesForChat(this, mChat.getId()));
-        // Displays welcome message if no messages in chat.
-        if (mAdapter.getItemCount() == 0) {
-            mRecyclerView.setVisibility(View.GONE);
-            mNoMessagesView.setVisibility(View.VISIBLE);
-        } else {
-            mRecyclerView.setVisibility(View.VISIBLE);
-            mNoMessagesView.setVisibility(View.GONE);
+        if (mFindChatsTask != null) {
+            mFindChatsTask.cancel(true);
+        }
+        mFindChatsTask = new FindChatsAsyncTask(this, mChat);
+        mFindChatsTask.execute();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mFindChatsTask != null) {
+            mFindChatsTask.cancel(true);
+        }
+        if (mSendMessageTask != null) {
+            mSendMessageTask.cancel(true);
         }
     }
 
@@ -226,10 +239,71 @@ public class ChatActivity extends GoogleSignedInActivity {
     }
 
     private void sendMessage(Message message) {
-        MockDatabase.saveMessage(this, mChat, message);
-        mAdapter.addMessage(message);
-        mRecyclerView.smoothScrollToPosition(mAdapter.getItemCount());
+        if (mSendMessageTask != null) {
+            mSendMessageTask.cancel(true);
+        }
+        mSendMessageTask = new SendMessageAsyncTask(this, mChat);
+        mSendMessageTask.execute(message);
+    }
 
-        SchedulerHelper.scheduleMockNotification(this, mChat, message);
+    class FindChatsAsyncTask extends AsyncTask<Void, Void, Collection<Message>> {
+
+        final Context mContext;
+        final Chat mChat;
+
+        FindChatsAsyncTask(Context context, Chat chat) {
+            this.mContext = context;
+            this.mChat = chat;
+        }
+
+        @Override
+        protected Collection<Message> doInBackground(Void... params) {
+            return MockDatabase.getAllMessagesForChat(mContext, mChat.getId());
+        }
+
+        @Override
+        protected void onPostExecute(Collection<Message> chats) {
+            super.onPostExecute(chats);
+            mAdapter.addMessages(chats);
+            // Displays welcome message if no messages in chat.
+            if (mAdapter.getItemCount() == 0) {
+                mRecyclerView.setVisibility(View.GONE);
+                mNoMessagesView.setVisibility(View.VISIBLE);
+            } else {
+                mRecyclerView.setVisibility(View.VISIBLE);
+                mNoMessagesView.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    class SendMessageAsyncTask extends AsyncTask<Message, Void, Message> {
+
+        final Context mContext;
+        final Chat mChat;
+
+        SendMessageAsyncTask(Context context, Chat chat) {
+            this.mContext = context;
+            this.mChat = chat;
+        }
+
+        @Override
+        protected Message doInBackground(Message... params) {
+            List<Message> parameters = Arrays.asList(params);
+            if (parameters.isEmpty()) {
+                throw new IllegalArgumentException("Messages are required for sending.");
+            }
+            for (Message message : parameters) {
+                MockDatabase.saveMessage(mContext, mChat, message);
+                SchedulerHelper.scheduleMockNotification(mContext, mChat, message);
+            }
+            return parameters.get(parameters.size() - 1);
+        }
+
+        @Override
+        protected void onPostExecute(Message message) {
+            super.onPostExecute(message);
+            mAdapter.addMessage(message);
+            mRecyclerView.smoothScrollToPosition(mAdapter.getItemCount());
+        }
     }
 }
