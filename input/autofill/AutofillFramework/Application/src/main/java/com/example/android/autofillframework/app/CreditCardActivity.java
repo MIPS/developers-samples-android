@@ -21,11 +21,23 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.example.android.autofillframework.R;
 
+import java.util.Calendar;
+
 public class CreditCardActivity extends AppCompatActivity {
+
+    private static final int CC_EXP_YEARS_COUNT = 5;
+
+    private final String[] years = new String[CC_EXP_YEARS_COUNT];
+
+    private Spinner mCcExpirationDaySpinner = findViewById(R.id.expirationDay);
+    private Spinner mCcExpirationMonthSpinner = findViewById(R.id.expirationMonth);
+    private Spinner mCcExpirationYearSpinner = findViewById(R.id.expirationYear);
+    private EditText mCcNumber = findViewById(R.id.creditCardNumberField);
 
     public static Intent getStartActivityIntent(Context context) {
         Intent intent = new Intent(context, CreditCardActivity.class);
@@ -55,11 +67,17 @@ public class CreditCardActivity extends AppCompatActivity {
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         ccExpirationMonthSpinner.setAdapter(monthAdapter);
 
-        ArrayAdapter<CharSequence> yearAdapter = ArrayAdapter.createFromResource
-                (this, R.array.year_array, android.R.layout.simple_spinner_item);
-        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        ccExpirationYearSpinner.setAdapter(yearAdapter);
-
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        for (int i = 0; i < years.length; i++) {
+            years[i] = Integer.toString(year + i);
+        }
+        ccExpirationYearSpinner.setAdapter(
+                new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, years) {
+                    @Override
+                    public CharSequence[] getAutofillOptions() {
+                        return years;
+                    }
+                });
         findViewById(R.id.submit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,7 +93,10 @@ public class CreditCardActivity extends AppCompatActivity {
     }
 
     private void resetFields() {
-        //TODO
+        mCcExpirationDaySpinner.setSelection(0);
+        mCcExpirationMonthSpinner.setSelection(0);
+        mCcExpirationYearSpinner.setSelection(0);
+        mCcNumber.setText("");
     }
 
     /**

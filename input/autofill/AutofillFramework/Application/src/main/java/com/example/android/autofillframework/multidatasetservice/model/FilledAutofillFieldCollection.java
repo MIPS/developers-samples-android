@@ -62,17 +62,21 @@ public final class FilledAutofillFieldCollection {
     }
 
     /**
-     * Sets values for a list of hints.
+     * Adds a {@code FilledAutofillField} to the collection, indexed by all of its hints.
      */
-    public void setAutofillValuesForHints(@NonNull String[] autofillHints, @NonNull FilledAutofillField autofillValue) {
+    public void add(@NonNull FilledAutofillField filledAutofillField) {
+        String[] autofillHints = filledAutofillField.getAutofillHints();
         for (int i = 0; i < autofillHints.length; i++) {
-            mHintMap.put(autofillHints[i], autofillValue);
+            mHintMap.put(autofillHints[i], filledAutofillField);
         }
     }
 
     /**
      * Populates a {@link Dataset.Builder} with appropriate values for each {@link AutofillId}
-     * in a {@code AutofillFieldMetadataCollection}.
+     * in a {@code AutofillFieldMetadataCollection}. In other words, it constructs an autofill
+     * {@link Dataset.Builder} by applying saved values (from this {@code FilledAutofillFieldCollection})
+     * to Views specified in a {@code AutofillFieldMetadataCollection}, which represents the current
+     * page the user is on.
      */
     public boolean applyToFields(AutofillFieldMetadataCollection autofillFieldMetadataCollection,
             Dataset.Builder datasetBuilder) {
@@ -80,7 +84,8 @@ public final class FilledAutofillFieldCollection {
         List<String> allHints = autofillFieldMetadataCollection.getAllHints();
         for (int hintIndex = 0; hintIndex < allHints.size(); hintIndex++) {
             String hint = allHints.get(hintIndex);
-            List<AutofillFieldMetadata> fillableAutofillFields = autofillFieldMetadataCollection.getFieldsForHint(hint);
+            List<AutofillFieldMetadata> fillableAutofillFields =
+                    autofillFieldMetadataCollection.getFieldsForHint(hint);
             if (fillableAutofillFields == null) {
                 continue;
             }
@@ -131,10 +136,15 @@ public final class FilledAutofillFieldCollection {
         return setValueAtLeastOnce;
     }
 
+    /**
+     * @param autofillHints List of autofill hints, usually associated with a View or set of Views.
+     * @return whether any of the filled fields on the page have at least 1 autofillHint that is
+     * in the provided autofillHints.
+     */
     public boolean helpsWithHints(List<String> autofillHints) {
         for (int i = 0; i < autofillHints.size(); i++) {
             String autofillHint = autofillHints.get(i);
-            if (mHintMap.get(autofillHint) != null && !mHintMap.get(autofillHint).isNull()) {
+            if (mHintMap.containsKey(autofillHint) && !mHintMap.get(autofillHint).isNull()) {
                 return true;
             }
         }

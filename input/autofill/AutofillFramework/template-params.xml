@@ -22,9 +22,9 @@
     <package>com.example.android.autofillframework</package>
 
     <!-- change minSdk if needed-->
-    <minSdk>"O"</minSdk>
-    <compileSdkVersion>"android-O"</compileSdkVersion>
-    <targetSdkVersion>"O"</targetSdkVersion>
+    <minSdk>26</minSdk>
+    <compileSdkVersion>26</compileSdkVersion>
+    <targetSdkVersion>26</targetSdkVersion>
     <!-- Include additional dependencies here.-->
     <!-- dependency>com.google.android.gms:play-services:5.0.+</dependency -->
 

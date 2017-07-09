@@ -61,8 +61,7 @@ internal class StructureParser(private val mStructure: AssistStructure) {
                 if (forFill) {
                     autofillFields.add(AutofillFieldMetadata(viewNode))
                 } else {
-                    filledAutofillFieldCollection.setAutofillValuesForHints(viewNode.autofillHints,
-                            FilledAutofillField(viewNode))
+                    filledAutofillFieldCollection.add(FilledAutofillField(viewNode))
                 }
             }
         }

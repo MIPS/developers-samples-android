@@ -27,6 +27,7 @@ import android.service.autofill.FillResponse;
 import android.service.autofill.SaveCallback;
 import android.service.autofill.SaveRequest;
 import android.util.Log;
+import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
 
 import com.example.android.autofillframework.R;
@@ -50,13 +51,6 @@ public class MyAutofillService extends AutofillService {
         final Bundle data = request.getClientState();
         Log.d(TAG, "onFillRequest(): data=" + bundleToString(data));
 
-        // Temporary hack for disabling autofill for components in this autofill service.
-        // i.e. we don't want to autofill components in AuthActivity.
-        if (structure.getActivityComponent().toShortString()
-                .contains("com.example.android.autofillframework.service")) {
-            callback.onSuccess(null);
-            return;
-        }
         cancellationSignal.setOnCancelListener(new CancellationSignal.OnCancelListener() {
             @Override
             public void onCancel() {
@@ -70,19 +64,21 @@ public class MyAutofillService extends AutofillService {
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
         // Check user's settings for authenticating Responses and Datasets.
         boolean responseAuth = MyPreferences.getInstance(this).isResponseAuth();
+        AutofillId[] autofillIds = autofillFields.getAutofillIds();
         if (responseAuth) {
             // If the entire Autofill Response is authenticated, AuthActivity is used
             // to generate Response.
             IntentSender sender = AuthActivity.getAuthIntentSenderForResponse(this);
             RemoteViews presentation = AutofillHelper
-                    .newRemoteViews(getPackageName(), getString(R.string.autofill_sign_in_prompt));
+                    .newRemoteViews(getPackageName(), getString(R.string.autofill_sign_in_prompt),
+                            R.drawable.ic_lock_black_24dp);
             responseBuilder
-                    .setAuthentication(autofillFields.getAutofillIds(), sender, presentation);
+                    .setAuthentication(autofillIds, sender, presentation);
             callback.onSuccess(responseBuilder.build());
         } else {
             boolean datasetAuth = MyPreferences.getInstance(this).isDatasetAuth();
             HashMap<String, FilledAutofillFieldCollection> clientFormDataMap =
-                    SharedPrefsAutofillRepository.getInstance(this).getClientFormData
+                    SharedPrefsAutofillRepository.getInstance(this).getFilledAutofillFieldCollection
                             (autofillFields.getFocusedHints(), autofillFields.getAllHints());
             FillResponse response = AutofillHelper.newResponse
                     (this, datasetAuth, autofillFields, clientFormDataMap);
@@ -99,7 +95,7 @@ public class MyAutofillService extends AutofillService {
         StructureParser parser = new StructureParser(structure);
         parser.parseForSave();
         FilledAutofillFieldCollection filledAutofillFieldCollection = parser.getClientFormData();
-        SharedPrefsAutofillRepository.getInstance(this).saveClientFormData(filledAutofillFieldCollection);
+        SharedPrefsAutofillRepository.getInstance(this).saveFilledAutofillFieldCollection(filledAutofillFieldCollection);
     }
 
     @Override

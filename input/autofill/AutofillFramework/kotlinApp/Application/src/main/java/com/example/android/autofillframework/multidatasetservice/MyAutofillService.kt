@@ -36,14 +36,6 @@ class MyAutofillService : AutofillService() {
         val structure = request.getFillContexts().get(request.getFillContexts().size - 1).structure
         val data = request.clientState
         Log.d(TAG, "onFillRequest(): data=" + bundleToString(data))
-
-        // Temporary hack for disabling autofill for components in this autofill service.
-        // i.e. we don't want to autofill components in AuthActivity.
-        if (structure.activityComponent.toShortString()
-                .contains("com.example.android.autofillframework.service")) {
-            callback.onSuccess(null)
-            return
-        }
         cancellationSignal.setOnCancelListener { Log.w(TAG, "Cancel autofill not implemented in this sample.") }
         // Parse AutoFill data in Activity
         val parser = StructureParser(structure)
@@ -58,13 +50,13 @@ class MyAutofillService : AutofillService() {
             // to generate Response.
             val sender = AuthActivity.getAuthIntentSenderForResponse(this)
             val presentation = AutofillHelper
-                    .newRemoteViews(packageName, getString(R.string.autofill_sign_in_prompt))
+                    .newRemoteViews(packageName, getString(R.string.autofill_sign_in_prompt), R.drawable.ic_lock_black_24dp)
             responseBuilder
                     .setAuthentication(autofillFields.autofillIds.toTypedArray(), sender, presentation)
             callback.onSuccess(responseBuilder.build())
         } else {
             val datasetAuth = MyPreferences.isDatasetAuth(this)
-            val clientFormDataMap = SharedPrefsAutofillRepository.getClientFormData(this,
+            val clientFormDataMap = SharedPrefsAutofillRepository.getFilledAutofillFieldCollection(this,
                     autofillFields.focusedAutofillHints, autofillFields.allAutofillHints)
             val response = AutofillHelper.newResponse(this, datasetAuth, autofillFields, clientFormDataMap)
             callback.onSuccess(response)
@@ -78,7 +70,8 @@ class MyAutofillService : AutofillService() {
         Log.d(TAG, "onSaveRequest(): data=" + bundleToString(data))
         val parser = StructureParser(structure)
         parser.parseForSave()
-        SharedPrefsAutofillRepository.saveClientFormData(this, parser.filledAutofillFieldCollection)
+        SharedPrefsAutofillRepository.saveFilledAutofillFieldCollection(this,
+                parser.filledAutofillFieldCollection)
     }
 
     override fun onConnected() {

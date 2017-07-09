@@ -53,7 +53,7 @@ public class SharedPrefsAutofillRepository implements AutofillRepository {
     }
 
     @Override
-    public HashMap<String, FilledAutofillFieldCollection> getClientFormData(List<String> focusedAutofillHints,
+    public HashMap<String, FilledAutofillFieldCollection> getFilledAutofillFieldCollection(List<String> focusedAutofillHints,
             List<String> allAutofillHints) {
         boolean hasDataForFocusedAutofillHints = false;
         HashMap<String, FilledAutofillFieldCollection> clientFormDataMap = new HashMap<>();
@@ -81,7 +81,7 @@ public class SharedPrefsAutofillRepository implements AutofillRepository {
     }
 
     @Override
-    public void saveClientFormData(FilledAutofillFieldCollection filledAutofillFieldCollection) {
+    public void saveFilledAutofillFieldCollection(FilledAutofillFieldCollection filledAutofillFieldCollection) {
         String datasetName = "dataset-" + getDatasetNumber();
         filledAutofillFieldCollection.setDatasetName(datasetName);
         Set<String> allAutofillData = getAllAutofillDataStringSet();

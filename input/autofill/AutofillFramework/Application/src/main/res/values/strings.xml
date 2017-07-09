@@ -47,6 +47,9 @@
     <string name="settings_auth_enter_current_password">Enter current password</string>
     <string name="settings_auth_enter_new_password">Enter new password</string>
     <string name="settings_auth_change_credentials_title">Change credentials</string>
+    <string name="clear_label">Clear</string>
+    <string name="login_label">Login</string>
+    <string name="master_password_label">Master Password</string>
     <string-array name="month_array">
         <item>Jan</item>
         <item>Feb</item>
@@ -93,17 +96,6 @@
         <item>28</item>
         <item>30</item>
         <item>31</item>
-    </string-array>
-
-    <string-array name="year_array">
-        <item>2017</item>
-        <item>2018</item>
-        <item>2019</item>
-        <item>2020</item>
-        <item>2021</item>
-        <item>2022</item>
-        <item>2023</item>
-        <item>2024</item>
     </string-array>
 
     <string-array name="mock_autocomplete_sign_in_suggestions">
