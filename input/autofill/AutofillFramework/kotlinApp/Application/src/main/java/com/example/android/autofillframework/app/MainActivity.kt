@@ -17,8 +17,10 @@ package com.example.android.autofillframework.app
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import com.example.android.autofillframework.R
 import kotlinx.android.synthetic.main.activity_main.creditCardCheckoutButton
+import kotlinx.android.synthetic.main.activity_main.emailComposeButton
 import kotlinx.android.synthetic.main.activity_main.standardLoginWithAutoCompleteButton
 import kotlinx.android.synthetic.main.activity_main.standardViewSignInButton
 import kotlinx.android.synthetic.main.activity_main.virtualViewSignInButton
@@ -31,10 +33,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        standardViewSignInButton.setOnClickListener { standardViewSignIn() }
-        virtualViewSignInButton.setOnClickListener { virtualViewSignIn() }
-        creditCardCheckoutButton.setOnClickListener { creditCardCheckout() }
-        standardLoginWithAutoCompleteButton.setOnClickListener { standardAutoCompleteSignIn() }
+        standardViewSignInButton.setNavigationButtonClickListener(View.OnClickListener { standardViewSignIn() })
+        virtualViewSignInButton.setNavigationButtonClickListener(View.OnClickListener { virtualViewSignIn() })
+        creditCardCheckoutButton.setNavigationButtonClickListener(View.OnClickListener { creditCardCheckout() })
+        standardLoginWithAutoCompleteButton.setNavigationButtonClickListener(View.OnClickListener { standardAutoCompleteSignIn() })
+        emailComposeButton.setNavigationButtonClickListener(View.OnClickListener { emailCompose() })
     }
 
     private fun creditCardCheckout() {
@@ -54,6 +57,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun virtualViewSignIn() {
         val intent = VirtualSignInActivity.getStartActivityIntent(this)
+        startActivity(intent)
+    }
+
+    private fun emailCompose() {
+        val intent = EmailComposeActivity.getStartActivityIntent(this)
         startActivity(intent)
     }
 }

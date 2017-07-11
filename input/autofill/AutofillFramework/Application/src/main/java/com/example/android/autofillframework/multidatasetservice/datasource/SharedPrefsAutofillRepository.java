@@ -21,6 +21,7 @@ import android.util.ArraySet;
 
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +60,8 @@ public class SharedPrefsAutofillRepository implements AutofillRepository {
         HashMap<String, FilledAutofillFieldCollection> clientFormDataMap = new HashMap<>();
         Set<String> clientFormDataStringSet = getAllAutofillDataStringSet();
         for (String clientFormDataString : clientFormDataStringSet) {
-            FilledAutofillFieldCollection filledAutofillFieldCollection = new Gson().fromJson(clientFormDataString, FilledAutofillFieldCollection.class);
+            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+            FilledAutofillFieldCollection filledAutofillFieldCollection = gson.fromJson(clientFormDataString, FilledAutofillFieldCollection.class);
             if (filledAutofillFieldCollection != null) {
                 if (filledAutofillFieldCollection.helpsWithHints(focusedAutofillHints)) {
                     // Saved data has data relevant to at least 1 of the hints associated with the
@@ -85,7 +87,8 @@ public class SharedPrefsAutofillRepository implements AutofillRepository {
         String datasetName = "dataset-" + getDatasetNumber();
         filledAutofillFieldCollection.setDatasetName(datasetName);
         Set<String> allAutofillData = getAllAutofillDataStringSet();
-        allAutofillData.add(new Gson().toJson(filledAutofillFieldCollection));
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        allAutofillData.add(gson.toJson(filledAutofillFieldCollection));
         saveAllAutofillDataStringSet(allAutofillData);
         incrementDatasetNumber();
     }

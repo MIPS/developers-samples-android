@@ -22,7 +22,6 @@ import android.view.autofill.AutofillId
 import android.view.autofill.AutofillValue
 import com.example.android.autofillframework.CommonUtil.TAG
 import com.example.android.autofillframework.multidatasetservice.AutofillFieldMetadataCollection
-import com.example.android.autofillframework.multidatasetservice.AutofillHelper
 import com.google.gson.annotations.Expose
 import java.util.HashMap
 

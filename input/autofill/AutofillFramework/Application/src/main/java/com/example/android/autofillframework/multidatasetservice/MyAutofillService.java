@@ -35,6 +35,7 @@ import com.example.android.autofillframework.multidatasetservice.datasource.Shar
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 import com.example.android.autofillframework.multidatasetservice.settings.MyPreferences;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -65,7 +66,7 @@ public class MyAutofillService extends AutofillService {
         // Check user's settings for authenticating Responses and Datasets.
         boolean responseAuth = MyPreferences.getInstance(this).isResponseAuth();
         AutofillId[] autofillIds = autofillFields.getAutofillIds();
-        if (responseAuth) {
+        if (responseAuth && !Arrays.asList(autofillIds).isEmpty()) {
             // If the entire Autofill Response is authenticated, AuthActivity is used
             // to generate Response.
             IntentSender sender = AuthActivity.getAuthIntentSenderForResponse(this);
