@@ -26,7 +26,7 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/wearBodySensorsPermissionButton"
+            android:id="@+id/wear_body_sensors_permission_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -36,7 +36,7 @@
             android:onClick="onClickWearBodySensors" />
 
         <Button
-            android:id="@+id/phoneStoragePermissionButton"
+            android:id="@+id/phone_storage_permission_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

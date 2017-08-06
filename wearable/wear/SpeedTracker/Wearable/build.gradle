@@ -18,13 +18,9 @@ repositories {
     }
 }
 
-
-
 dependencies {
-
     compile 'com.android.support:wear:26.0.0'
-
-
+    compile 'com.google.android.gms:play-services-location:10.2.4'
     compile 'com.google.android.gms:play-services-wearable:10.2.4'
     compile 'com.android.support:support-v13:25.3.1'
 
@@ -32,6 +28,7 @@ dependencies {
 
     compile 'com.google.android.support:wearable:2.0.3'
 
+    compile project(':Shared')
 }
 
 // The sample build uses multiple directories to
@@ -56,7 +53,7 @@ android {
 
         targetSdkVersion 26
 
-        multiDexEnabled true
+         multiDexEnabled true
 
     }
 
