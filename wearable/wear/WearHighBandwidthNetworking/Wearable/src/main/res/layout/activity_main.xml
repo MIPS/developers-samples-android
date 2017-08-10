@@ -53,7 +53,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_box="left|right">
+            app:boxedEdges="left|right">
 
             <TextView
                 android:id="@+id/info_text"

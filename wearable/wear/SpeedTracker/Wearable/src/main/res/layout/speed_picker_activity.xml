@@ -25,7 +25,7 @@
         android:id="@+id/frame_layout"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        app:layout_box="left|bottom|right">
+        app:boxedEdges="left|bottom|right">
 
 
         <android.support.wearable.view.WearableListView
