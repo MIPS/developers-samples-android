@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -121,8 +122,9 @@ public class CustomVirtualView extends View {
             child.setAutofillHints(item.hints);
             child.setAutofillType(item.type);
             child.setDataIsSensitive(!item.sanitized);
-            child.setText(item.text);
-            child.setAutofillValue(AutofillValue.forText(item.text));
+            if (TextUtils.getTrimmedLength(item.text) > 0) {
+                child.setAutofillValue(AutofillValue.forText(item.text));
+            }
             child.setFocused(item.focused);
             child.setId(item.id, getContext().getPackageName(), null, item.line.idEntry);
             child.setClassName(item.getClassName());

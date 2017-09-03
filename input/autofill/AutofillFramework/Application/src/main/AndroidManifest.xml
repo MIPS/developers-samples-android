@@ -49,6 +49,9 @@
         <activity
             android:name=".app.EmailComposeActivity"
             android:taskAffinity=".EmailComposeActivity" />
+        <activity
+            android:name=".app.CreditCardCompoundViewActivity"
+            android:taskAffinity=".CreditCardCompoundViewActivity" />
         <!--
         Including launcher icon for Autofill Settings to convenience.
         Not necessary for a real service.

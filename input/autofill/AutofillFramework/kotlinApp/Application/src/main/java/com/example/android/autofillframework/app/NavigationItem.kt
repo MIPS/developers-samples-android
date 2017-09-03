@@ -29,8 +29,11 @@ import kotlinx.android.synthetic.main.navigation_item.view.buttonLabel
 import kotlinx.android.synthetic.main.navigation_item.view.cardView
 import kotlinx.android.synthetic.main.navigation_item.view.infoButton
 
-class NavigationItem @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0) : FrameLayout(context, attrs, defStyleAttr) {
+class NavigationItem @JvmOverloads constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     init {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.NavigationItem,
@@ -43,13 +46,17 @@ class NavigationItem @JvmOverloads constructor(context: Context, attrs: Attribut
         typedArray.recycle()
         LayoutInflater.from(context).inflate(R.layout.navigation_item, this)
         logoDrawable?.setColorFilter(imageColor, PorterDuff.Mode.SRC_IN)
-        buttonLabel.text = labelText
-        buttonLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(logoDrawable, null, null, null)
-        infoButton.setOnClickListener {
-            AlertDialog.Builder(this@NavigationItem.context)
-                    .setMessage(infoText).create().show()
+        buttonLabel.apply {
+            text = labelText
+            setCompoundDrawablesRelativeWithIntrinsicBounds(logoDrawable, null, null, null)
         }
-        infoButton.setColorFilter(imageColor)
+        infoButton.apply {
+            setOnClickListener {
+                AlertDialog.Builder(this@NavigationItem.context)
+                        .setMessage(infoText).create().show()
+            }
+            setColorFilter(imageColor)
+        }
     }
 
     fun setNavigationButtonClickListener(l: View.OnClickListener?) {
