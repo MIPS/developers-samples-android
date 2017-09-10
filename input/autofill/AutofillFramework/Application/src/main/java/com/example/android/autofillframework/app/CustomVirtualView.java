@@ -33,13 +33,10 @@ import android.view.autofill.AutofillValue;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.android.autofillframework.R;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import static com.example.android.autofillframework.CommonUtil.bundleToString;
-
 
 /**
  * Custom View with virtual child views for Username/Password text fields.
@@ -47,6 +44,8 @@ import static com.example.android.autofillframework.CommonUtil.bundleToString;
 public class CustomVirtualView extends View {
 
     private static final String TAG = "CustomView";
+    private static final boolean DEBUG = true;
+    private static final boolean VERBOSE = false;
 
     private static final int TOP_MARGIN = 100;
     private static final int LEFT_MARGIN = 100;
@@ -64,19 +63,12 @@ public class CustomVirtualView extends View {
     private Line mFocusedLine;
     private Paint mTextPaint;
 
-    private Line mUsernameLine;
-    private Line mPasswordLine;
-
     public CustomVirtualView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mAutofillManager = context.getSystemService(AutofillManager.class);
         mTextPaint = new Paint();
         mTextPaint.setStyle(Style.FILL);
         mTextPaint.setTextSize(TEXT_HEIGHT);
-        mUsernameLine = addLine("usernameField", context.getString(R.string.username_label),
-                new String[]{View.AUTOFILL_HINT_USERNAME}, "         ", true);
-        mPasswordLine = addLine("passwordField", context.getString(R.string.password_label),
-                new String[]{View.AUTOFILL_HINT_PASSWORD}, "         ", false);
     }
 
     @Override
@@ -85,7 +77,7 @@ public class CustomVirtualView extends View {
         // The Dataset is comprised of a list of AutofillValues, with each AutofillValue meant
         // to fill a specific autofillable view. Now we have to update the UI based on the
         // AutofillValues in the list.
-        Log.d(TAG, "autoFill(): " + values);
+        if (DEBUG) Log.d(TAG, "autofill(): " + values);
         for (int i = 0; i < values.size(); i++) {
             int id = values.keyAt(i);
             AutofillValue value = values.valueAt(i);
@@ -102,21 +94,22 @@ public class CustomVirtualView extends View {
         postInvalidate();
     }
 
-
     @Override
     public void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
         // Build a ViewStructure that will get passed to the AutofillService by the framework
         // when it is time to find autofill suggestions.
         structure.setClassName(getClass().getName());
         int childrenSize = mVirtualViews.size();
-        Log.d(TAG, "onProvideAutofillVirtualStructure(): flags = " + flags + ", items = "
-                + childrenSize + ", extras: " + bundleToString(structure.getExtras()));
+        if (DEBUG) {
+            Log.d(TAG, "onProvideAutofillVirtualStructure(): flags = " + flags + ", items = "
+                    + childrenSize + ", extras: " + bundleToString(structure.getExtras()));
+        }
         int index = structure.addChildCount(childrenSize);
         // Traverse through the view hierarchy, including virtual child views. For each view, we
         // need to set the relevant autofill metadata and add it to the ViewStructure.
         for (int i = 0; i < childrenSize; i++) {
             Item item = mVirtualViews.valueAt(i);
-            Log.d(TAG, "Adding new child at index " + index + ": " + item);
+            if (DEBUG) Log.d(TAG, "Adding new child at index " + index + ": " + item);
             ViewStructure child = structure.newChild(index);
             child.setAutofillId(structure.getAutofillId(), item.id);
             child.setAutofillHints(item.hints);
@@ -126,7 +119,7 @@ public class CustomVirtualView extends View {
                 child.setAutofillValue(AutofillValue.forText(item.text));
             }
             child.setFocused(item.focused);
-            child.setId(item.id, getContext().getPackageName(), null, item.line.idEntry);
+            child.setId(item.id, getContext().getPackageName(), null, item.line.mIdEntry);
             child.setClassName(item.getClassName());
             index++;
         }
@@ -136,24 +129,26 @@ public class CustomVirtualView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        Log.d(TAG, "onDraw: " + mVirtualViewGroups.size() + " lines; canvas:" + canvas);
+        if (VERBOSE) {
+            Log.v(TAG, "onDraw(): " + mVirtualViewGroups.size() + " lines; canvas:" + canvas);
+        }
         float x;
         float y = TOP_MARGIN + LINE_HEIGHT;
         for (int i = 0; i < mVirtualViewGroups.size(); i++) {
             x = LEFT_MARGIN;
             Line line = mVirtualViewGroups.get(i);
-            Log.v(TAG, "Drawing '" + line + "' at " + x + "x" + y);
-            mTextPaint.setColor(line.fieldTextItem.focused ? FOCUSED_COLOR : UNFOCUSED_COLOR);
-            String readOnlyText = line.labelItem.text + ":  [";
-            String writeText = line.fieldTextItem.text + "]";
+            if (VERBOSE) Log.v(TAG, "Drawing '" + line + "' at " + x + "x" + y);
+            mTextPaint.setColor(line.mFieldTextItem.focused ? FOCUSED_COLOR : UNFOCUSED_COLOR);
+            String readOnlyText = line.mLabelItem.text + ":  [";
+            String writeText = line.mFieldTextItem.text + "]";
             // Paints the label first...
             canvas.drawText(readOnlyText, x, y, mTextPaint);
             // ...then paints the edit text and sets the proper boundary
             float deltaX = mTextPaint.measureText(readOnlyText);
             x += deltaX;
-            line.bounds.set((int) x, (int) (y - LINE_HEIGHT),
+            line.mBounds.set((int) x, (int) (y - LINE_HEIGHT),
                     (int) (x + mTextPaint.measureText(writeText)), (int) y);
-            Log.d(TAG, "setBounds(" + x + ", " + y + "): " + line.bounds);
+            if (VERBOSE) Log.v(TAG, "setBounds(" + x + ", " + y + "): " + line.mBounds);
             canvas.drawText(writeText, x, y, mTextPaint);
             y += LINE_HEIGHT;
         }
@@ -162,13 +157,13 @@ public class CustomVirtualView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int y = (int) event.getY();
-        Log.d(TAG, "Touched: y=" + y + ", range=" + LINE_HEIGHT + ", top=" + TOP_MARGIN);
+        if (DEBUG) Log.d(TAG, "Touched: y=" + y + ", range=" + LINE_HEIGHT + ", top=" + TOP_MARGIN);
         int lowerY = TOP_MARGIN;
         int upperY = -1;
         for (int i = 0; i < mVirtualViewGroups.size(); i++) {
             upperY = lowerY + LINE_HEIGHT;
             Line line = mVirtualViewGroups.get(i);
-            Log.d(TAG, "Line " + i + " ranges from " + lowerY + " to " + upperY);
+            if (DEBUG) Log.d(TAG, "Line " + i + " ranges from " + lowerY + " to " + upperY);
             if (lowerY <= y && y <= upperY) {
                 if (mFocusedLine != null) {
                     Log.d(TAG, "Removing focus from " + mFocusedLine);
@@ -185,26 +180,23 @@ public class CustomVirtualView extends View {
         return super.onTouchEvent(event);
     }
 
-    public CharSequence getUsernameText() {
-        return mUsernameLine.fieldTextItem.text;
-    }
-
-    public CharSequence getPasswordText() {
-        return mPasswordLine.fieldTextItem.text;
-    }
-
-    public void resetFields() {
-        mUsernameLine.reset();
-        mPasswordLine.reset();
-        postInvalidate();
-    }
-
-    private Line addLine(String idEntry, String label, String[] hints, String text,
-            boolean sanitized) {
-        Line line = new Line(idEntry, label, hints, text, sanitized);
+    /**
+     * Adds a new line (containining a label and an input field) to the view.
+     *
+     * @param idEntry id used to identify the line.
+     * @param label text used in the label.
+     * @param text initial text used in the input field.
+     * @param sensitive whether the input is considered sensitive.
+     * @param hints list of autofill hints.
+     *
+     * @return the new line.
+     */
+    public Line addLine(String idEntry, String label, String text, boolean sensitive,
+            String... hints) {
+        Line line = new Line(idEntry, label, hints, text, !sensitive);
         mVirtualViewGroups.add(line);
-        mVirtualViews.put(line.labelItem.id, line.labelItem);
-        mVirtualViews.put(line.fieldTextItem.id, line.fieldTextItem);
+        mVirtualViews.put(line.mLabelItem.id, line.mLabelItem);
+        mVirtualViews.put(line.mFieldTextItem.id, line.mFieldTextItem);
         return line;
     }
 
@@ -240,32 +232,37 @@ public class CustomVirtualView extends View {
         }
     }
 
-    private final class Line {
+    /**
+     * A line in the virtual view contains a label and an input field.
+     */
+    public final class Line {
 
         // Boundaries of the text field, relative to the CustomView
-        final Rect bounds = new Rect();
-        private Item labelItem;
-        private Item fieldTextItem;
-        private String idEntry;
+        private final Rect mBounds = new Rect();
+        private final Item mLabelItem;
+        private final Item mFieldTextItem;
+        private final String mIdEntry;
 
         private Line(String idEntry, String label, String[] hints, String text, boolean sanitized) {
-            this.idEntry = idEntry;
-            this.labelItem = new Item(this, ++sNextId, null, AUTOFILL_TYPE_NONE, label,
+            this.mIdEntry = idEntry;
+            this.mLabelItem = new Item(this, ++sNextId, null, AUTOFILL_TYPE_NONE, label,
                     false, true);
-            this.fieldTextItem = new Item(this, ++sNextId, hints, AUTOFILL_TYPE_TEXT, text,
+            this.mFieldTextItem = new Item(this, ++sNextId, hints, AUTOFILL_TYPE_TEXT, text,
                     true, sanitized);
         }
 
-        void changeFocus(boolean focused) {
-            fieldTextItem.focused = focused;
+        private void changeFocus(boolean focused) {
+            mFieldTextItem.focused = focused;
             if (focused) {
                 Rect absBounds = getAbsCoordinates();
-                Log.d(TAG, "focus gained on " + fieldTextItem.id + "; absBounds=" + absBounds);
-                mAutofillManager.notifyViewEntered(CustomVirtualView.this, fieldTextItem.id,
+                if (DEBUG) {
+                    Log.d(TAG, "focus gained on " + mFieldTextItem.id + "; absBounds=" + absBounds);
+                }
+                mAutofillManager.notifyViewEntered(CustomVirtualView.this, mFieldTextItem.id,
                         absBounds);
             } else {
-                Log.d(TAG, "focus lost on " + fieldTextItem.id);
-                mAutofillManager.notifyViewExited(CustomVirtualView.this, fieldTextItem.id);
+                if (DEBUG) Log.d(TAG, "focus lost on " + mFieldTextItem.id);
+                mAutofillManager.notifyViewExited(CustomVirtualView.this, mFieldTextItem.id);
             }
         }
 
@@ -273,22 +270,34 @@ public class CustomVirtualView extends View {
             // Must offset the boundaries so they're relative to the CustomView.
             int offset[] = new int[2];
             getLocationOnScreen(offset);
-            Rect absBounds = new Rect(bounds.left + offset[0],
-                    bounds.top + offset[1],
-                    bounds.right + offset[0], bounds.bottom + offset[1]);
-            Log.v(TAG, "getAbsCoordinates() for " + fieldTextItem.id + ": bounds=" + bounds
-                    + " offset: " + Arrays.toString(offset) + " absBounds: " + absBounds);
+            Rect absBounds = new Rect(mBounds.left + offset[0],
+                    mBounds.top + offset[1],
+                    mBounds.right + offset[0], mBounds.bottom + offset[1]);
+            if (VERBOSE) {
+                Log.v(TAG, "getAbsCoordinates() for " + mFieldTextItem.id + ": bounds=" + mBounds
+                        + " offset: " + Arrays.toString(offset) + " absBounds: " + absBounds);
+            }
             return absBounds;
         }
 
+        /**
+         * Gets the value of the input field text.
+         */
+        public CharSequence getText() {
+            return mFieldTextItem.text;
+        }
+
+        /**
+         * Resets the value of the input field text.
+         */
         public void reset() {
-            fieldTextItem.text = "        ";
+            mFieldTextItem.text = "        ";
         }
 
         @Override
         public String toString() {
-            return "Label: " + labelItem + " Text: " + fieldTextItem + " Focused: " +
-                    fieldTextItem.focused;
+            return "Label: " + mLabelItem + " Text: " + mFieldTextItem + " Focused: " +
+                    mFieldTextItem.focused;
         }
     }
 }

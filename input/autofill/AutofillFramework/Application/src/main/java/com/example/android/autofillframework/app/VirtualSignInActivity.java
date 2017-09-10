@@ -25,11 +25,12 @@ import android.widget.Toast;
 
 import com.example.android.autofillframework.R;
 
-
 public class VirtualSignInActivity extends AppCompatActivity {
 
     private CustomVirtualView mCustomVirtualView;
     private AutofillManager mAutofillManager;
+    private CustomVirtualView.Line mUsernameLine;
+    private CustomVirtualView.Line mPasswordLine;
 
     public static Intent getStartActivityIntent(Context context) {
         Intent intent = new Intent(context, VirtualSignInActivity.class);
@@ -43,6 +44,14 @@ public class VirtualSignInActivity extends AppCompatActivity {
         setContentView(R.layout.virtual_login_activity);
 
         mCustomVirtualView = (CustomVirtualView) findViewById(R.id.custom_view);
+
+        mUsernameLine = mCustomVirtualView.addLine("usernameField",
+                getString(R.string.username_label),
+                "         ", false, View.AUTOFILL_HINT_USERNAME);
+        mPasswordLine = mCustomVirtualView.addLine("passwordField",
+                getString(R.string.password_label),
+                "         ", true, View.AUTOFILL_HINT_PASSWORD);
+
         findViewById(R.id.login).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -53,31 +62,24 @@ public class VirtualSignInActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 resetFields();
+                mAutofillManager.cancel();
             }
         });
         mAutofillManager = getSystemService(AutofillManager.class);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
     private void resetFields() {
-        mCustomVirtualView.resetFields();
+        mUsernameLine.reset();
+        mPasswordLine.reset();
+        mCustomVirtualView.postInvalidate();
     }
 
     /**
      * Emulates a login action.
      */
     private void login() {
-        String username = mCustomVirtualView.getUsernameText().toString();
-        String password = mCustomVirtualView.getPasswordText().toString();
+        String username = mUsernameLine.getText().toString();
+        String password = mPasswordLine.getText().toString();
         boolean valid = isValidCredentials(username, password);
         if (valid) {
             Intent intent = WelcomeActivity.getStartActivityIntent(VirtualSignInActivity.this);
