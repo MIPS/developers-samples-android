@@ -22,6 +22,8 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.text.TextUtils;
+import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -32,6 +34,9 @@ import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.android.autofillframework.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +63,10 @@ public class CustomVirtualView extends View {
 
     private final ArrayList<Line> mVirtualViewGroups = new ArrayList<>();
     private final SparseArray<Item> mVirtualViews = new SparseArray<>();
+
+    private final SparseArray<Partition> mPartitionsByAutofillId = new SparseArray<>();
+    private final ArrayMap<String, Partition> mPartitionsByName = new ArrayMap<>();
+
     private final AutofillManager mAutofillManager;
 
     private Line mFocusedLine;
@@ -76,8 +85,30 @@ public class CustomVirtualView extends View {
         // User has just selected a Dataset from the list of autofill suggestions.
         // The Dataset is comprised of a list of AutofillValues, with each AutofillValue meant
         // to fill a specific autofillable view. Now we have to update the UI based on the
-        // AutofillValues in the list.
+        // AutofillValues in the list, but first we make sure all autofilled values belong to the
+        // same partition
         if (DEBUG) Log.d(TAG, "autofill(): " + values);
+
+        // First get the name of all partitions in the values
+        ArraySet<String> partitions = new ArraySet<>();
+        for (int i = 0; i < values.size(); i++) {
+            int id = values.keyAt(i);
+            Partition partition = mPartitionsByAutofillId.get(id);
+            if (partition == null) {
+                showError(getContext().getString(R.string.message_autofill_no_partitions, id,
+                        mPartitionsByAutofillId));
+                return;
+            }
+            partitions.add(partition.mName);
+        }
+
+        // Then make sure they follow the Highlander rule (There can be only one)
+        if (partitions.size() != 1) {
+            showError(getContext().getString(R.string.message_autofill_blocked, partitions));
+            return;
+        }
+
+        // Finally, autofill it.
         for (int i = 0; i < values.size(); i++) {
             int id = values.keyAt(i);
             AutofillValue value = values.valueAt(i);
@@ -92,6 +123,7 @@ public class CustomVirtualView extends View {
             }
         }
         postInvalidate();
+        showMessage(getContext().getString(R.string.message_autofill_ok, partitions.valueAt(0)));
     }
 
     @Override
@@ -181,24 +213,40 @@ public class CustomVirtualView extends View {
     }
 
     /**
-     * Adds a new line (containining a label and an input field) to the view.
+     * Creates a new partition with the given name.
      *
-     * @param idEntry id used to identify the line.
-     * @param label text used in the label.
-     * @param text initial text used in the input field.
-     * @param sensitive whether the input is considered sensitive.
-     * @param hints list of autofill hints.
-     *
-     * @return the new line.
+     * @throws IllegalArgumentException if such partition already exists.
      */
-    public Line addLine(String idEntry, String label, String text, boolean sensitive,
-            String... hints) {
-        Line line = new Line(idEntry, label, hints, text, !sensitive);
-        mVirtualViewGroups.add(line);
-        mVirtualViews.put(line.mLabelItem.id, line.mLabelItem);
-        mVirtualViews.put(line.mFieldTextItem.id, line.mFieldTextItem);
-        return line;
+    public Partition addPartition(String name) {
+        // TODO: use PreConditions
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null");
+        }
+        if (mPartitionsByName.containsKey(name)) {
+            throw new IllegalArgumentException("partition with wuch name already exists");
+        }
+        Partition partition = new Partition(name);
+        mPartitionsByName.put(name, partition);
+        return partition;
     }
+
+    private void showError(String message) {
+        showMessage(true, message);
+    }
+
+    private void showMessage(String message) {
+        showMessage(false, message);
+    }
+
+    private void showMessage(boolean warning, String message) {
+        if (warning) {
+            Log.w(TAG, message);
+        } else {
+            Log.i(TAG, message);
+        }
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+
 
     private static final class Item {
         private final Line line;
@@ -229,6 +277,56 @@ public class CustomVirtualView extends View {
 
         public String getClassName() {
             return editable ? EditText.class.getName() : TextView.class.getName();
+        }
+    }
+
+    /**
+     * A partition represents a logical group of items, such as credit card info.
+     */
+    public final class Partition {
+        private final String mName;
+        private final SparseArray<Line> mLines = new SparseArray<>();
+
+        private Partition(String name) {
+            mName = name;
+        }
+
+        /**
+         * Adds a new line (containining a label and an input field) to the view.
+         *
+         * @param idEntry id used to identify the line.
+         * @param label text used in the label.
+         * @param text initial text used in the input field.
+         * @param sensitive whether the input is considered sensitive.
+         * @param hints list of autofill hints.
+         *
+         * @return the new line.
+         */
+        public Line addLine(String idEntry, String label, String text, boolean sensitive,
+                String... hints) {
+            Line line = new Line(idEntry, label, hints, text, !sensitive);
+            mVirtualViewGroups.add(line);
+            int id = line.mFieldTextItem.id;
+            mLines.put(id, line);
+            mVirtualViews.put(line.mLabelItem.id, line.mLabelItem);
+            mVirtualViews.put(id, line.mFieldTextItem);
+            mPartitionsByAutofillId.put(id, this);
+
+            return line;
+        }
+
+        /**
+         * Resets the value of all items in the partition.
+         */
+        public void reset() {
+            for (int i = 0; i < mLines.size(); i++) {
+                mLines.valueAt(i).reset();
+            }
+        }
+
+        @Override
+        public String toString() {
+            return mName;
         }
     }
 

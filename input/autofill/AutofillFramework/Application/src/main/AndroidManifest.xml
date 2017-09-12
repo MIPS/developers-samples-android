@@ -52,6 +52,10 @@
         <activity
             android:name=".app.CreditCardCompoundViewActivity"
             android:taskAffinity=".CreditCardCompoundViewActivity" />
+        <activity
+            android:name=".app.MultiplePartitionsActivity"
+            android:taskAffinity=".MultiplePartitionsActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <!--
         Including launcher icon for Autofill Settings to convenience.
         Not necessary for a real service.

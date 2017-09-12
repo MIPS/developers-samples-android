@@ -24,6 +24,7 @@
     <string name="navigation_button_autocomplete_login_label">Sample Login Using AutoCompleteTextViews</string>
     <string name="navigation_button_email_compose_label">Sample Email Compose Using EditTexts</string>
     <string name="navigation_button_compound_view_credit_card_label">Sample Credit Card Check Out Using Compound Views</string>
+    <string name="navigation_button_multiple_partitions_label">Sample Page with Multiple Data Partitions</string>
     <string name="username_label">Username</string>
     <string name="password_label">Password</string>
     <string name="welcome_text">Success!</string>
@@ -33,6 +34,9 @@
     <string name="autofill_sign_in_prompt">Tap to sign in.</string>
     <string name="credit_card_number_label">CC Number</string>
     <string name="credit_card_expiration_label">CC Exp</string>
+    <string name="credit_card_expiration_day_label">CC Exp Day</string>
+    <string name="credit_card_expiration_month_label">CC Exp Month</string>
+    <string name="credit_card_expiration_year_label">CC Exp Year</string>
     <string name="credit_card_security_code_label">CC Security Code</string>
     <string name="settings_cancel">Cancel</string>
     <string name="settings_save">Save</string>
@@ -94,6 +98,19 @@
         optimized out of the box for autofill, this example shows how to implement certain Autofill-
         specific methods and XML properties for the custom compound view.
     </string>
+    <string name="multiple_partitions">
+        This is a sample page that contains multiple partitions (login credentials, address,
+        credit card info) and can be used to make sure that only one partition can be autofilled
+        at time.
+    </string>
+
+    <string name="partition_credentials">Credentials</string>
+    <string name="partition_credit_card">Credit Card</string>
+
+    <string name="message_autofill_ok">Autofilled partition \'%1$s\'</string>
+    <string name="message_autofill_no_partitions">No partition for id %1$d on %2$s</string>
+    <string name="message_autofill_blocked">Blocked cross-partitions: %1$s</string>
+
     <plurals name="welcome_page_countdown">
         <item quantity="one">Automatically return to main page in %d second.</item>
         <item quantity="other">Automatically return to main page in %d seconds.</item>

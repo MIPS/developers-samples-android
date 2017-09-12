@@ -71,6 +71,7 @@
             app:labelText="@string/navigation_button_email_compose_label"
             app:itemLogo="@drawable/ic_email_black_24dp"
             app:imageColor="@android:color/holo_purple"/>
+
         <com.example.android.autofillframework.app.NavigationItem
             android:id="@+id/creditCardCompoundViewButton"
             android:layout_width="match_parent"
@@ -80,5 +81,13 @@
             app:imageColor="@android:color/holo_blue_light"
             app:itemLogo="@drawable/ic_view_module_black_24dp" />
 
+        <com.example.android.autofillframework.app.NavigationItem
+            android:id="@+id/multiplePartitionsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:infoText="@string/multiple_partitions"
+            app:labelText="@string/navigation_button_multiple_partitions_label"
+            app:itemLogo="@drawable/ic_custom_virtual_logo_24dp"
+            app:imageColor="@android:color/holo_green_dark"/>
     </LinearLayout>
 </ScrollView>
