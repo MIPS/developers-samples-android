@@ -25,10 +25,13 @@ import android.view.autofill.AutofillValue;
 import com.example.android.autofillframework.multidatasetservice.AutofillFieldMetadata;
 import com.example.android.autofillframework.multidatasetservice.AutofillFieldMetadataCollection;
 import com.google.gson.annotations.Expose;
+import com.example.android.autofillframework.multidatasetservice.AutofillHelper;
+import com.example.android.autofillframework.multidatasetservice.W3cHints;
 
 import java.util.HashMap;
 import java.util.List;
 
+import static com.example.android.autofillframework.CommonUtil.DEBUG;
 import static com.example.android.autofillframework.CommonUtil.TAG;
 
 /**
@@ -50,6 +53,48 @@ public final class FilledAutofillFieldCollection {
         mDatasetName = datasetName;
     }
 
+    private static boolean isW3cSectionPrefix(String hint) {
+        return hint.startsWith(W3cHints.PREFIX_SECTION);
+    }
+
+    private static boolean isW3cAddressType(String hint) {
+        switch (hint) {
+            case W3cHints.SHIPPING:
+            case W3cHints.BILLING:
+                return true;
+        }
+        return false;
+    }
+
+    private static boolean isW3cTypePrefix(String hint) {
+        switch (hint) {
+            case W3cHints.PREFIX_WORK:
+            case W3cHints.PREFIX_FAX:
+            case W3cHints.PREFIX_HOME:
+            case W3cHints.PREFIX_PAGER:
+                return true;
+        }
+        return false;
+    }
+
+    private static boolean isW3cTypeHint(String hint) {
+        switch (hint) {
+            case W3cHints.TEL:
+            case W3cHints.TEL_COUNTRY_CODE:
+            case W3cHints.TEL_NATIONAL:
+            case W3cHints.TEL_AREA_CODE:
+            case W3cHints.TEL_LOCAL:
+            case W3cHints.TEL_LOCAL_PREFIX:
+            case W3cHints.TEL_LOCAL_SUFFIX:
+            case W3cHints.TEL_EXTENSION:
+            case W3cHints.EMAIL:
+            case W3cHints.IMPP:
+                return true;
+        }
+        Log.w(TAG, "Invalid W3C type hint: " + hint);
+        return false;
+    }
+
     /**
      * Returns the name of the {@link Dataset}.
      */
@@ -69,8 +114,72 @@ public final class FilledAutofillFieldCollection {
      */
     public void add(@NonNull FilledAutofillField filledAutofillField) {
         String[] autofillHints = filledAutofillField.getAutofillHints();
-        for (String hint : autofillHints) {
-            mHintMap.put(hint, filledAutofillField);
+        String nextHint = null;
+        for (int i = 0; i < autofillHints.length; i++) {
+            String hint = autofillHints[i];
+            if (i < autofillHints.length - 1) {
+                nextHint = autofillHints[i + 1];
+            }
+            // First convert the compound W3C autofill hints
+            if (isW3cSectionPrefix(hint) && i < autofillHints.length - 1) {
+                hint = autofillHints[++i];
+                if (DEBUG) Log.d(TAG, "Hint is a W3C section prefix; using " + hint + " instead");
+                if (i < autofillHints.length - 1) {
+                    nextHint = autofillHints[i + 1];
+                }
+            }
+            if (isW3cTypePrefix(hint) && nextHint != null && isW3cTypeHint(nextHint)) {
+                hint = nextHint;
+                i++;
+                if (DEBUG) Log.d(TAG, "Hint is a W3C type prefix; using " + hint + " instead");
+            }
+            if (isW3cAddressType(hint) && nextHint != null) {
+                hint = nextHint;
+                i++;
+                if (DEBUG) Log.d(TAG, "Hint is a W3C address prefix; using " + hint + " instead");
+            }
+
+            // Then check if the "actual" hint is supported.
+
+
+            if (AutofillHelper.isValidHint(hint)) {
+                mHintMap.put(transformHint(hint), filledAutofillField);
+            } else {
+                Log.e(TAG, "Invalid hint: " + autofillHints[i]);
+            }
+        }
+    }
+
+    public String transformHint(String hint) {
+        switch (hint) {
+            case W3cHints.NEW_PASSWORD:
+            case W3cHints.CURRENT_PASSWORD:
+                return View.AUTOFILL_HINT_PASSWORD;
+            case W3cHints.STREET_ADDRESS:
+                return View.AUTOFILL_HINT_POSTAL_ADDRESS;
+            case W3cHints.POSTAL_CODE:
+                return View.AUTOFILL_HINT_POSTAL_CODE;
+            case W3cHints.CC_NAME:
+            case W3cHints.GIVEN_NAME:
+            case W3cHints.CC_GIVEN_NAME:
+                return View.AUTOFILL_HINT_NAME;
+            case W3cHints.CC_ADDITIONAL_NAME:
+            case W3cHints.CC_NUMBER:
+                return View.AUTOFILL_HINT_CREDIT_CARD_NUMBER;
+            case W3cHints.CC_EXPIRATION:
+                return View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE;
+            case W3cHints.CC_EXPIRATION_MONTH:
+                return View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH;
+            case W3cHints.CC_EXPIRATION_YEAR:
+                return View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR;
+            case W3cHints.CC_CSC:
+                return View.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE;
+            case W3cHints.TEL:
+                return View.AUTOFILL_HINT_PHONE;
+            case W3cHints.EMAIL:
+                return View.AUTOFILL_HINT_EMAIL_ADDRESS;
+            default:
+                return hint;
         }
     }
 
@@ -78,6 +187,7 @@ public final class FilledAutofillFieldCollection {
      * Populates a {@link Dataset.Builder} with appropriate values for each {@link AutofillId}
      * in a {@code AutofillFieldMetadataCollection}.
      *
+     * <p>
      * In other words, it constructs an autofill
      * {@link Dataset.Builder} by applying saved values (from this {@code FilledAutofillFieldCollection})
      * to Views specified in a {@code AutofillFieldMetadataCollection}, which represents the current

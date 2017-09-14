@@ -25,7 +25,8 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
 import com.example.android.autofillframework.R
-import kotlinx.android.synthetic.main.cc_exp_date.view.*
+import kotlinx.android.synthetic.main.cc_exp_date.view.ccExpMonth
+import kotlinx.android.synthetic.main.cc_exp_date.view.ccExpYear
 import java.util.Calendar
 
 class CreditCardExpirationDateView @JvmOverloads constructor(

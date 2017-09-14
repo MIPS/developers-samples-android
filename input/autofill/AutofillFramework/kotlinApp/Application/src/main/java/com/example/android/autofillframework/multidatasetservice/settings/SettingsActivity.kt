@@ -137,7 +137,7 @@ class SettingsActivity : AppCompatActivity() {
         with(switchView) {
             contentDescription = switchLabel
             isChecked = checked
-            setOnCheckedChangeListener (checkedChangeListener)
+            setOnCheckedChangeListener(checkedChangeListener)
         }
         container.setOnClickListener { switchView.performClick() }
     }

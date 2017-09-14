@@ -29,9 +29,11 @@ import android.service.autofill.SaveRequest;
 import android.util.Log;
 import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import com.example.android.autofillframework.R;
 import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsAutofillRepository;
+import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsPackageVerificationRepository;
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 import com.example.android.autofillframework.multidatasetservice.settings.MyPreferences;
 
@@ -49,6 +51,13 @@ public class MyAutofillService extends AutofillService {
             FillCallback callback) {
         AssistStructure structure = request.getFillContexts()
                 .get(request.getFillContexts().size() - 1).getStructure();
+        String packageName = structure.getActivityComponent().getPackageName();
+        if (!SharedPrefsPackageVerificationRepository.getInstance()
+                .putPackageSignatures(getApplicationContext(), packageName)) {
+            Toast.makeText(getApplicationContext(), R.string.invalid_package_signature,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         final Bundle data = request.getClientState();
         Log.d(TAG, "onFillRequest(): data=" + bundleToString(data));
 
@@ -79,8 +88,8 @@ public class MyAutofillService extends AutofillService {
         } else {
             boolean datasetAuth = MyPreferences.getInstance(this).isDatasetAuth();
             HashMap<String, FilledAutofillFieldCollection> clientFormDataMap =
-                    SharedPrefsAutofillRepository.getInstance(this).getFilledAutofillFieldCollection
-                            (autofillFields.getFocusedHints(), autofillFields.getAllHints());
+                    SharedPrefsAutofillRepository.getInstance().getFilledAutofillFieldCollection
+                            (this, autofillFields.getFocusedHints(), autofillFields.getAllHints());
             FillResponse response = AutofillHelper.newResponse
                     (this, datasetAuth, autofillFields, clientFormDataMap);
             callback.onSuccess(response);
@@ -91,12 +100,20 @@ public class MyAutofillService extends AutofillService {
     public void onSaveRequest(SaveRequest request, SaveCallback callback) {
         List<FillContext> context = request.getFillContexts();
         final AssistStructure structure = context.get(context.size() - 1).getStructure();
+        String packageName = structure.getActivityComponent().getPackageName();
+        if (!SharedPrefsPackageVerificationRepository.getInstance()
+                .putPackageSignatures(getApplicationContext(), packageName)) {
+            Toast.makeText(getApplicationContext(), R.string.invalid_package_signature,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         final Bundle data = request.getClientState();
         Log.d(TAG, "onSaveRequest(): data=" + bundleToString(data));
         StructureParser parser = new StructureParser(structure);
         parser.parseForSave();
         FilledAutofillFieldCollection filledAutofillFieldCollection = parser.getClientFormData();
-        SharedPrefsAutofillRepository.getInstance(this).saveFilledAutofillFieldCollection(filledAutofillFieldCollection);
+        SharedPrefsAutofillRepository.getInstance()
+                .saveFilledAutofillFieldCollection(this, filledAutofillFieldCollection);
     }
 
     @Override

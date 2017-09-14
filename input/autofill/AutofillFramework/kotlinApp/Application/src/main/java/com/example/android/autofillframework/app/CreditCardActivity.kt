@@ -53,15 +53,13 @@ class CreditCardActivity : AppCompatActivity() {
         val year = Calendar.getInstance().get(Calendar.YEAR)
 
         val years = (0 until CC_EXP_YEARS_COUNT)
-                .map {Integer.toString(year + it)}
+                .map { Integer.toString(year + it) }
                 .toTypedArray<CharSequence>()
 
         expirationYear.adapter = object : ArrayAdapter<CharSequence?>(this,
                 android.R.layout.simple_spinner_item, years) {
-                    override fun getAutofillOptions(): Array<CharSequence> {
-                        return years
-                    }
-                }
+            override fun getAutofillOptions() = years
+        }
         submit.setOnClickListener { submitCcInfo() }
         clear.setOnClickListener { resetFields() }
     }

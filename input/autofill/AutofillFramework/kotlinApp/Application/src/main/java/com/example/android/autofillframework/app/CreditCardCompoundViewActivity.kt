@@ -19,9 +19,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-
 import com.example.android.autofillframework.R
-import kotlinx.android.synthetic.main.credit_card_compound_view_activity.*
+import kotlinx.android.synthetic.main.credit_card_compound_view_activity.clearButton
+import kotlinx.android.synthetic.main.credit_card_compound_view_activity.creditCardExpirationView
+import kotlinx.android.synthetic.main.credit_card_compound_view_activity.creditCardNumberField
+import kotlinx.android.synthetic.main.credit_card_compound_view_activity.submitButton
 
 class CreditCardCompoundViewActivity : AppCompatActivity() {
 

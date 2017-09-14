@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
  * Copyright (C) 2017 The Android Open Source Project
  *
@@ -60,6 +60,7 @@
     <string name="submit_label">Submit</string>
     <string name="cc_exp_month_description">Credit Card Expiration Month</string>
     <string name="cc_exp_year_description">Credit Card Expiration Year</string>
+    <string name="invalid_package_signature">Invalid package signature</string>
     <string name="edittext_login_info">This is a sample login page that uses standard EditTexts
         from the UI toolkit. EditTexts are already optimized for autofill so extra autofill-specific
         code is almost never needed.

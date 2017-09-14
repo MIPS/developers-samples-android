@@ -32,7 +32,11 @@ import com.example.android.autofillframework.R;
 
 import java.util.Calendar;
 
-public class CreditCardExpirationDateView extends FrameLayout {
+/**
+ * A custom view that represents a {@link View#AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE} using
+ * 2 {@link Spinner spinners} to represent the credit card expiration month and year.
+ */
+public class CreditCardExpirationDateCompoundView extends FrameLayout {
 
     private static final int CC_EXP_YEARS_COUNT = 5;
 
@@ -41,20 +45,21 @@ public class CreditCardExpirationDateView extends FrameLayout {
     private Spinner mCcExpMonthSpinner;
     private Spinner mCcExpYearSpinner;
 
-    public CreditCardExpirationDateView(@NonNull Context context) {
+    public CreditCardExpirationDateCompoundView(@NonNull Context context) {
         this(context, null);
     }
 
-    public CreditCardExpirationDateView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public CreditCardExpirationDateCompoundView(@NonNull Context context,
+            @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public CreditCardExpirationDateView(@NonNull Context context, @Nullable AttributeSet attrs,
-            int defStyleAttr) {
+    public CreditCardExpirationDateCompoundView(@NonNull Context context,
+            @Nullable AttributeSet attrs, int defStyleAttr) {
         this(context, attrs, defStyleAttr, 0);
     }
 
-    public CreditCardExpirationDateView(@NonNull final Context context,
+    public CreditCardExpirationDateCompoundView(@NonNull final Context context,
             @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         View rootView = LayoutInflater.from(context).inflate(R.layout.cc_exp_date, this);
@@ -76,7 +81,7 @@ public class CreditCardExpirationDateView extends FrameLayout {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 context.getSystemService(AutofillManager.class)
-                        .notifyValueChanged(CreditCardExpirationDateView.this);
+                        .notifyValueChanged(CreditCardExpirationDateCompoundView.this);
             }
 
             @Override

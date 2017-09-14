@@ -44,13 +44,13 @@ import java.util.Arrays;
 import static com.example.android.autofillframework.CommonUtil.bundleToString;
 
 /**
- * Custom View with virtual child views for Username/Password text fields.
+ * A custom View with a virtual structure for fields supporting {@link View#getAutofillHints()}
  */
 public class CustomVirtualView extends View {
 
     private static final String TAG = "CustomView";
-    private static final boolean DEBUG = true;
-    private static final boolean VERBOSE = false;
+    protected static final boolean DEBUG = true;
+    protected static final boolean VERBOSE = false;
 
     private static final int TOP_MARGIN = 100;
     private static final int LEFT_MARGIN = 100;
@@ -67,17 +67,34 @@ public class CustomVirtualView extends View {
     private final SparseArray<Partition> mPartitionsByAutofillId = new SparseArray<>();
     private final ArrayMap<String, Partition> mPartitionsByName = new ArrayMap<>();
 
-    private final AutofillManager mAutofillManager;
+    protected final AutofillManager mAutofillManager;
 
-    private Line mFocusedLine;
+    protected Line mFocusedLine;
     private Paint mTextPaint;
+
+    private int mTextHeight;
+    private int mVerticalGap;
+    private int mLineLength;
+    protected int mTopMargin;
+    protected int mLeftMargin;
 
     public CustomVirtualView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mAutofillManager = context.getSystemService(AutofillManager.class);
         mTextPaint = new Paint();
+        resetCoordinates();
+    }
+
+    protected void resetCoordinates() {
+        // TODO: read values below from attrs instead of constants
+        // felipeal: inline those not changed
         mTextPaint.setStyle(Style.FILL);
         mTextPaint.setTextSize(TEXT_HEIGHT);
+        mTopMargin = TOP_MARGIN;
+        mLeftMargin = LEFT_MARGIN;
+        mTextHeight = TEXT_HEIGHT;
+        mVerticalGap = VERTICAL_GAP;
+        mLineLength = mTextHeight + mVerticalGap;
     }
 
     @Override
@@ -153,6 +170,9 @@ public class CustomVirtualView extends View {
             child.setFocused(item.focused);
             child.setId(item.id, getContext().getPackageName(), null, item.line.mIdEntry);
             child.setClassName(item.getClassName());
+            child.setVisibility(item.line.mVisible ? View.VISIBLE : View.INVISIBLE);
+            child.setDimens(item.line.mBounds.left, item.line.mBounds.top, 0, 0,
+                    item.line.mBounds.width(), item.line.mBounds.height());
             index++;
         }
     }
@@ -165,10 +185,14 @@ public class CustomVirtualView extends View {
             Log.v(TAG, "onDraw(): " + mVirtualViewGroups.size() + " lines; canvas:" + canvas);
         }
         float x;
-        float y = TOP_MARGIN + LINE_HEIGHT;
+        float y = mTopMargin + mLineLength;
         for (int i = 0; i < mVirtualViewGroups.size(); i++) {
-            x = LEFT_MARGIN;
             Line line = mVirtualViewGroups.get(i);
+            if (!line.mVisible) {
+                if (VERBOSE) Log.v(TAG, "onDraw(): skipping invisible line " + line);
+                continue;
+            }
+            x = mLeftMargin;
             if (VERBOSE) Log.v(TAG, "Drawing '" + line + "' at " + x + "x" + y);
             mTextPaint.setColor(line.mFieldTextItem.focused ? FOCUSED_COLOR : UNFOCUSED_COLOR);
             String readOnlyText = line.mLabelItem.text + ":  [";
@@ -189,12 +213,28 @@ public class CustomVirtualView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int y = (int) event.getY();
-        if (DEBUG) Log.d(TAG, "Touched: y=" + y + ", range=" + LINE_HEIGHT + ", top=" + TOP_MARGIN);
-        int lowerY = TOP_MARGIN;
+        onMotion(y);
+        return super.onTouchEvent(event);
+    }
+
+    /**
+     * Handles a motion event.
+     *
+     * @param y y coordinate.
+     */
+    protected void onMotion(int y) {
+        if (DEBUG) {
+            Log.d(TAG, "onMotion(): y=" + y + ", range=" + mLineLength + ", top=" + mTopMargin);
+        }
+        int lowerY = mTopMargin;
         int upperY = -1;
         for (int i = 0; i < mVirtualViewGroups.size(); i++) {
-            upperY = lowerY + LINE_HEIGHT;
             Line line = mVirtualViewGroups.get(i);
+            if (!line.mVisible) {
+                if (VERBOSE) Log.v(TAG, "onMotion(): skipping invisible line " + line);
+                continue;
+            }
+            upperY = lowerY + mLineLength;
             if (DEBUG) Log.d(TAG, "Line " + i + " ranges from " + lowerY + " to " + upperY);
             if (lowerY <= y && y <= upperY) {
                 if (mFocusedLine != null) {
@@ -207,9 +247,8 @@ public class CustomVirtualView extends View {
                 invalidate();
                 break;
             }
-            lowerY += LINE_HEIGHT;
+            lowerY += mLineLength;
         }
-        return super.onTouchEvent(event);
     }
 
     /**
@@ -223,7 +262,7 @@ public class CustomVirtualView extends View {
             throw new IllegalArgumentException("name cannot be null");
         }
         if (mPartitionsByName.containsKey(name)) {
-            throw new IllegalArgumentException("partition with wuch name already exists");
+            throw new IllegalArgumentException("partition with such name already exists");
         }
         Partition partition = new Partition(name);
         mPartitionsByName.put(name, partition);
@@ -248,9 +287,9 @@ public class CustomVirtualView extends View {
     }
 
 
-    private static final class Item {
+    protected static final class Item {
         private final Line line;
-        private final int id;
+        protected final int id;
         private final boolean editable;
         private final boolean sanitized;
         private final String[] hints;
@@ -324,6 +363,16 @@ public class CustomVirtualView extends View {
             }
         }
 
+        /**
+         * Sets whether the lines in this partition are visible or not.
+         */
+        public void setVisibility(boolean visible) {
+            for (int i = 0; i < mLines.size(); i++) {
+                mLines.valueAt(i).mVisible = visible;
+            }
+            invalidate();
+        }
+
         @Override
         public String toString() {
             return mName;
@@ -338,8 +387,9 @@ public class CustomVirtualView extends View {
         // Boundaries of the text field, relative to the CustomView
         private final Rect mBounds = new Rect();
         private final Item mLabelItem;
-        private final Item mFieldTextItem;
+        protected final Item mFieldTextItem;
         private final String mIdEntry;
+        private boolean mVisible = true;
 
         private Line(String idEntry, String label, String[] hints, String text, boolean sanitized) {
             this.mIdEntry = idEntry;
@@ -395,7 +445,7 @@ public class CustomVirtualView extends View {
         @Override
         public String toString() {
             return "Label: " + mLabelItem + " Text: " + mFieldTextItem + " Focused: " +
-                    mFieldTextItem.focused;
+                    mFieldTextItem.focused + " Visible: " + mVisible;
         }
     }
 }

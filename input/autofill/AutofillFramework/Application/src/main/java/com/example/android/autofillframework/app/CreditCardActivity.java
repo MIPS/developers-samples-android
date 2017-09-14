@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.autofill.AutofillManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -38,6 +39,7 @@ public class CreditCardActivity extends AppCompatActivity {
     private Spinner mCcExpirationMonthSpinner;
     private Spinner mCcExpirationYearSpinner;
     private EditText mCcCardNumber;
+    private EditText mCcSecurityCode;
 
     public static Intent getStartActivityIntent(Context context) {
         Intent intent = new Intent(context, CreditCardActivity.class);
@@ -52,6 +54,7 @@ public class CreditCardActivity extends AppCompatActivity {
         mCcExpirationMonthSpinner = findViewById(R.id.expirationMonth);
         mCcExpirationYearSpinner = findViewById(R.id.expirationYear);
         mCcCardNumber = findViewById(R.id.creditCardNumberField);
+        mCcSecurityCode = findViewById(R.id.creditCardSecurityCode);
 
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> dayAdapter = ArrayAdapter.createFromResource
@@ -85,6 +88,7 @@ public class CreditCardActivity extends AppCompatActivity {
         findViewById(R.id.clear).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getSystemService(AutofillManager.class).cancel();
                 resetFields();
             }
         });
@@ -95,6 +99,7 @@ public class CreditCardActivity extends AppCompatActivity {
         mCcExpirationMonthSpinner.setSelection(0);
         mCcExpirationYearSpinner.setSelection(0);
         mCcCardNumber.setText("");
+        mCcSecurityCode.setText("");
     }
 
     /**

@@ -15,7 +15,6 @@
  */
 package com.example.android.autofillframework.multidatasetservice;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.assist.AssistStructure;
 import android.content.Context;
@@ -131,8 +130,8 @@ public class AuthActivity extends AppCompatActivity {
         int saveTypes = autofillFields.getSaveType();
         mReplyIntent = new Intent();
         HashMap<String, FilledAutofillFieldCollection> clientFormDataMap =
-                SharedPrefsAutofillRepository.getInstance(this).getFilledAutofillFieldCollection
-                        (autofillFields.getFocusedHints(), autofillFields.getAllHints());
+                SharedPrefsAutofillRepository.getInstance().getFilledAutofillFieldCollection
+                        (this, autofillFields.getFocusedHints(), autofillFields.getAllHints());
         if (forResponse) {
             setResponseIntent(AutofillHelper.newResponse
                     (this, false, autofillFields, clientFormDataMap));

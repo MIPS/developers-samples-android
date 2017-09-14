@@ -13,7 +13,6 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.android.autofillframework"
     android:versionCode="1"
@@ -30,6 +29,7 @@
             android:taskAffinity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -53,9 +53,15 @@
             android:name=".app.CreditCardCompoundViewActivity"
             android:taskAffinity=".CreditCardCompoundViewActivity" />
         <activity
+            android:name=".app.CreditCardDatePickerActivity"
+            android:taskAffinity=".CreditCardDatePickerActivity" />
+        <activity
             android:name=".app.MultiplePartitionsActivity"
             android:taskAffinity=".MultiplePartitionsActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".app.WebViewSignInActivity"
+            android:taskAffinity=".WebViewSignInActivity" />
         <!--
         Including launcher icon for Autofill Settings to convenience.
         Not necessary for a real service.
@@ -67,6 +73,7 @@
             android:taskAffinity=".SettingsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

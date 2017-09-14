@@ -29,7 +29,6 @@ import android.widget.RemoteViews;
 import com.example.android.autofillframework.R;
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -137,6 +136,56 @@ public final class AutofillHelper {
             case View.AUTOFILL_HINT_POSTAL_ADDRESS:
             case View.AUTOFILL_HINT_POSTAL_CODE:
             case View.AUTOFILL_HINT_USERNAME:
+            case W3cHints.HONORIFIC_PREFIX:
+            case W3cHints.GIVEN_NAME:
+            case W3cHints.ADDITIONAL_NAME:
+            case W3cHints.FAMILY_NAME:
+            case W3cHints.HONORIFIC_SUFFIX:
+            case W3cHints.NEW_PASSWORD:
+            case W3cHints.CURRENT_PASSWORD:
+            case W3cHints.ORGANIZATION_TITLE:
+            case W3cHints.ORGANIZATION:
+            case W3cHints.STREET_ADDRESS:
+            case W3cHints.ADDRESS_LINE1:
+            case W3cHints.ADDRESS_LINE2:
+            case W3cHints.ADDRESS_LINE3:
+            case W3cHints.ADDRESS_LEVEL4:
+            case W3cHints.ADDRESS_LEVEL3:
+            case W3cHints.ADDRESS_LEVEL2:
+            case W3cHints.ADDRESS_LEVEL1:
+            case W3cHints.COUNTRY:
+            case W3cHints.COUNTRY_NAME:
+            case W3cHints.POSTAL_CODE:
+            case W3cHints.CC_NAME:
+            case W3cHints.CC_GIVEN_NAME:
+            case W3cHints.CC_ADDITIONAL_NAME:
+            case W3cHints.CC_FAMILY_NAME:
+            case W3cHints.CC_NUMBER:
+            case W3cHints.CC_EXPIRATION:
+            case W3cHints.CC_EXPIRATION_MONTH:
+            case W3cHints.CC_EXPIRATION_YEAR:
+            case W3cHints.CC_CSC:
+            case W3cHints.CC_TYPE:
+            case W3cHints.TRANSACTION_CURRENCY:
+            case W3cHints.TRANSACTION_AMOUNT:
+            case W3cHints.LANGUAGE:
+            case W3cHints.BDAY:
+            case W3cHints.BDAY_DAY:
+            case W3cHints.BDAY_MONTH:
+            case W3cHints.BDAY_YEAR:
+            case W3cHints.SEX:
+            case W3cHints.URL:
+            case W3cHints.PHOTO:
+            case W3cHints.TEL:
+            case W3cHints.TEL_COUNTRY_CODE:
+            case W3cHints.TEL_NATIONAL:
+            case W3cHints.TEL_AREA_CODE:
+            case W3cHints.TEL_LOCAL:
+            case W3cHints.TEL_LOCAL_PREFIX:
+            case W3cHints.TEL_LOCAL_SUFFIX:
+            case W3cHints.TEL_EXTENSION:
+            case W3cHints.EMAIL:
+            case W3cHints.IMPP:
                 return true;
             default:
                 return false;

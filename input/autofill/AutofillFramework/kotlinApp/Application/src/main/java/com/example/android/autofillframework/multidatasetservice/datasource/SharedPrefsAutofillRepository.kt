@@ -20,7 +20,6 @@ import android.content.SharedPreferences
 import android.util.ArraySet
 import com.example.android.autofillframework.CommonUtil
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 

@@ -49,7 +49,7 @@
         app:layout_constraintTop_toTopOf="@+id/custom_virtual_login_header"
         app:dialogText="@string/custom_virtual_login_info"/>
 
-    <com.example.android.autofillframework.app.CustomVirtualView
+    <com.example.android.autofillframework.app.ScrollableCustomVirtualView
         android:id="@+id/custom_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/multiple_partitions_height"

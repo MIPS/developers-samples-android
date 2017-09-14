@@ -15,27 +15,30 @@
  */
 package com.example.android.autofillframework.multidatasetservice.datasource;
 
+import android.content.Context;
+
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 
 import java.util.HashMap;
 import java.util.List;
 
-public interface AutofillRepository {
+public interface AutofillDataSource {
 
     /**
-     * Gets saved FilledAutofillFieldCollection that contains some objects that can autofill fields with these
-     * {@code autofillHints}.
+     * Gets saved FilledAutofillFieldCollection that contains some objects that can autofill fields
+     * with these {@code autofillHints}.
      */
-    HashMap<String, FilledAutofillFieldCollection> getFilledAutofillFieldCollection(List<String> focusedAutofillHints,
-            List<String> allAutofillHints);
+    HashMap<String, FilledAutofillFieldCollection> getFilledAutofillFieldCollection(Context context,
+            List<String> focusedAutofillHints, List<String> allAutofillHints);
 
     /**
      * Saves LoginCredential under this datasetName.
      */
-    void saveFilledAutofillFieldCollection(FilledAutofillFieldCollection filledAutofillFieldCollection);
+    void saveFilledAutofillFieldCollection(Context context,
+            FilledAutofillFieldCollection filledAutofillFieldCollection);
 
     /**
      * Clears all data.
      */
-    void clear();
+    void clear(Context context);
 }

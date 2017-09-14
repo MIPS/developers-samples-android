@@ -24,7 +24,9 @@
     <string name="navigation_button_autocomplete_login_label">Sample Login Using AutoCompleteTextViews</string>
     <string name="navigation_button_email_compose_label">Sample Email Compose Using EditTexts</string>
     <string name="navigation_button_compound_view_credit_card_label">Sample Credit Card Check Out Using Compound Views</string>
+    <string name="navigation_button_date_picker_credit_card_label">Sample Credit Card Check Out Using Date Picker</string>
     <string name="navigation_button_multiple_partitions_label">Sample Page with Multiple Data Partitions</string>
+    <string name="navigation_button_web_view_login_label">Sample Login Using a WebView</string>
     <string name="username_label">Username</string>
     <string name="password_label">Password</string>
     <string name="welcome_text">Success!</string>
@@ -34,6 +36,7 @@
     <string name="autofill_sign_in_prompt">Tap to sign in.</string>
     <string name="credit_card_number_label">CC Number</string>
     <string name="credit_card_expiration_label">CC Exp</string>
+    <string name="credit_card_expiration_date_label">CC Exp Date</string>
     <string name="credit_card_expiration_day_label">CC Exp Day</string>
     <string name="credit_card_expiration_month_label">CC Exp Month</string>
     <string name="credit_card_expiration_year_label">CC Exp Year</string>
@@ -64,6 +67,7 @@
     <string name="submit_label">Submit</string>
     <string name="cc_exp_month_description">Credit Card Expiration Month</string>
     <string name="cc_exp_year_description">Credit Card Expiration Year</string>
+    <string name="invalid_package_signature">Invalid package signature</string>
     <string name="edittext_login_info">This is a sample login page that uses standard EditTexts
         from the UI toolkit. EditTexts are already optimized for autofill so extra autofill-specific
         code is almost never needed.
@@ -73,10 +77,10 @@
         interfere with the Autofill dialogs, so it is necessary to implement the AutofillCallback to
         disable AutoComplete when Autofill is working.
     </string>
-    <string name="custom_virtual_login_info">This is a sample login page that uses a custom View with
-        virtual children. Since the Autofill framework does not know how to autofill the virtual
-        children out of the box, it is necessary implement certain Autofill-specific methods and
-        interface directly with AutofillManager.
+    <string name="custom_virtual_login_info">This is a sample login page that uses a custom View
+        with virtual children. Since the Autofill framework does not know how to autofill the
+        virtual children out of the box, it is necessary implement certain Autofill-specific methods
+        and interface directly with AutofillManager.
     </string>
     <string name="spinners_credit_card_info">This is a sample credit card checkout page that uses
         EditTexts and Spinners to input data into the form. While EditTexts are optimized out of the
@@ -93,10 +97,21 @@
         did the latter.
     </string>
     <string name="compound_view_credit_card_info">
-        This is a sample credit card checkout page that uses a custom compound View to input the credit
-        card\'s expiration date and an EditText to input the credit card number. While the EditText is
-        optimized out of the box for autofill, this example shows how to implement certain Autofill-
-        specific methods and XML properties for the custom compound view.
+        This is a sample credit card checkout page that uses a custom compound View to input the
+        credit card\'s expiration date and an EditText to input the credit card number. While the
+        EditText is optimized out of the box for autofill, this example shows how to implement
+        certain Autofill-specific methods and XML properties for the custom compound view.
+    </string>
+    <string name="webview_login_info">
+        This is a sample login page that uses a WebView to control the UI. The HTML on the web page
+        uses standard W3C autofill hints that the autofill service recognizes. No extra code is
+        needed other than these hints.
+    </string>
+    <string name="date_picker_credit_card_info">
+        This is a sample credit card checkout page that uses a custom EditText and a DatePicker
+        to input the credit card\'s expiration date and an EditText to input the credit card number.
+        While the EditText is optimized out of the box for autofill, this example shows how to
+        use it to autofill a date field.
     </string>
     <string name="multiple_partitions">
         This is a sample page that contains multiple partitions (login credentials, address,
