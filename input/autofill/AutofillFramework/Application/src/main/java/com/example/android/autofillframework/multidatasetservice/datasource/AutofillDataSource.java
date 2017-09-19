@@ -32,7 +32,7 @@ public interface AutofillDataSource {
             List<String> focusedAutofillHints, List<String> allAutofillHints);
 
     /**
-     * Saves LoginCredential under this datasetName.
+     * Stores a collection of Autofill fields.
      */
     void saveFilledAutofillFieldCollection(Context context,
             FilledAutofillFieldCollection filledAutofillFieldCollection);

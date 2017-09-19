@@ -15,24 +15,32 @@
  */
 package com.example.android.autofillframework.multidatasetservice.settings;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.android.autofillframework.R;
+import com.example.android.autofillframework.multidatasetservice.AutofillHints;
 import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsAutofillRepository;
 import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsPackageVerificationRepository;
+import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillField;
+import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 
 public class SettingsActivity extends AppCompatActivity {
+    private static final String TAG = "SettingsActivity";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,42 +51,28 @@ public class SettingsActivity extends AppCompatActivity {
                 R.id.settings_auth_responses_label,
                 R.id.settings_auth_responses_switch,
                 preferences.isResponseAuth(),
-                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                        preferences.setResponseAuth(b);
-                    }
-                });
+                (compoundButton, isResponseAuth) -> preferences.setResponseAuth(isResponseAuth));
         setupSettingsSwitch(R.id.settings_auth_datasets_container,
                 R.id.settings_auth_datasets_label,
                 R.id.settings_auth_datasets_switch,
                 preferences.isDatasetAuth(),
-                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                        preferences.setDatasetAuth(b);
-                    }
-                });
+                (compoundButton, isDatasetAuth) -> preferences.setDatasetAuth(isDatasetAuth));
+        setupSettingsButton(R.id.settings_add_data_container,
+                R.id.settings_add_data_label,
+                R.id.settings_add_data_icon,
+                (view) -> buildAddDataDialog().show());
         setupSettingsButton(R.id.settings_clear_data_container,
                 R.id.settings_clear_data_label,
                 R.id.settings_clear_data_icon,
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        buildClearDataDialog().show();
-                    }
-                });
+                (view) -> buildClearDataDialog().show());
         setupSettingsButton(R.id.settings_auth_credentials_container,
                 R.id.settings_auth_credentials_label,
                 R.id.settings_auth_credentials_icon,
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (preferences.getMasterPassword() != null) {
-                            buildCurrentCredentialsDialog().show();
-                        } else {
-                            buildNewCredentialsDialog().show();
-                        }
+                (view) -> {
+                    if (preferences.getMasterPassword() != null) {
+                        buildCurrentCredentialsDialog().show();
+                    } else {
+                        buildNewCredentialsDialog().show();
                     }
                 });
     }
@@ -88,17 +82,62 @@ public class SettingsActivity extends AppCompatActivity {
                 .setMessage(R.string.settings_clear_data_confirmation)
                 .setTitle(R.string.settings_clear_data_confirmation_title)
                 .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        SharedPrefsAutofillRepository.getInstance().clear(SettingsActivity.this);
-                        SharedPrefsPackageVerificationRepository.getInstance()
-                                .clear(SettingsActivity.this);
-                        MyPreferences.getInstance(SettingsActivity.this).clearCredentials();
-                        dialog.dismiss();
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    SharedPrefsAutofillRepository.getInstance().clear(SettingsActivity.this);
+                    SharedPrefsPackageVerificationRepository.getInstance()
+                            .clear(SettingsActivity.this);
+                    MyPreferences.getInstance(SettingsActivity.this).clearCredentials();
+                    dialog.dismiss();
+                })
+                .create();
+    }
+
+    private AlertDialog buildAddDataDialog() {
+        NumberPicker numberOfDatasetsPicker = LayoutInflater
+                .from(SettingsActivity.this)
+                .inflate(R.layout.multidataset_service_settings_add_data_dialog, null)
+                .findViewById(R.id.number_of_datasets_picker);
+        numberOfDatasetsPicker.setMinValue(0);
+        numberOfDatasetsPicker.setMaxValue(10);
+        numberOfDatasetsPicker.setWrapSelectorWheel(false);
+        return new AlertDialog.Builder(SettingsActivity.this)
+                .setTitle(R.string.settings_add_data_title)
+                .setNegativeButton(R.string.cancel, null)
+                .setMessage(R.string.settings_select_number_of_datasets)
+                .setView(numberOfDatasetsPicker)
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    int numOfDatasets = numberOfDatasetsPicker.getValue();
+                    boolean success = buildAndSaveMockedAutofillFieldCollection(
+                            SettingsActivity.this, numOfDatasets);
+                    dialog.dismiss();
+                    if (success) {
+                        Snackbar.make(SettingsActivity.this.findViewById(R.id.settings_layout),
+                                SettingsActivity.this.getResources().getQuantityString(
+                                        R.plurals.settings_add_data_success, numOfDatasets,
+                                        numOfDatasets),
+                                Snackbar.LENGTH_SHORT).show();
                     }
                 })
                 .create();
+    }
+
+    /**
+     * Builds mock autofill data and saves it to repository.
+     */
+    private boolean buildAndSaveMockedAutofillFieldCollection(Context context, int numOfDatasets) {
+        if (numOfDatasets < 0 || numOfDatasets > 10) {
+            Log.w(TAG, "Number of Datasets out of range.");
+            return false;
+        }
+        for (int i = 0; i < numOfDatasets * 2; i += 2) {
+            for (int partition : AutofillHints.PARTITIONS) {
+                FilledAutofillFieldCollection filledAutofillFieldCollection =
+                        AutofillHints.getFakeFieldCollection(partition, i);
+                SharedPrefsAutofillRepository.getInstance().saveFilledAutofillFieldCollection(
+                        context, filledAutofillFieldCollection);
+            }
+        }
+        return true;
     }
 
     private AlertDialog.Builder prepareCredentialsDialog() {
@@ -137,13 +176,10 @@ public class SettingsActivity extends AppCompatActivity {
         return prepareCredentialsDialog()
                 .setMessage(R.string.settings_auth_enter_new_password)
                 .setView(newPasswordField)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String password = newPasswordField.getText().toString();
-                        MyPreferences.getInstance(SettingsActivity.this).setMasterPassword(password);
-                        dialog.dismiss();
-                    }
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    String password = newPasswordField.getText().toString();
+                    MyPreferences.getInstance(SettingsActivity.this).setMasterPassword(password);
+                    dialog.dismiss();
                 })
                 .create();
     }
@@ -155,12 +191,7 @@ public class SettingsActivity extends AppCompatActivity {
         final Switch switchView = container.findViewById(switchId);
         switchView.setContentDescription(switchLabel);
         switchView.setChecked(checked);
-        container.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switchView.performClick();
-            }
-        });
+        container.setOnClickListener((view) -> switchView.performClick());
         switchView.setOnCheckedChangeListener(checkedChangeListener);
     }
 

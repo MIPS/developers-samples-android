@@ -17,16 +17,14 @@ package com.example.android.autofillframework.multidatasetservice;
 
 public final class W3cHints {
 
-    private W3cHints() {}
-
     // Supported W3C autofill tokens (https://html.spec.whatwg.org/multipage/forms.html#autofill)
     public static final String HONORIFIC_PREFIX = "honorific-prefix";
-    public static final String NAME = "name"; // same as View.AUTOFILL_HINT_NAME
+    public static final String NAME = "name";
     public static final String GIVEN_NAME = "given-name";
     public static final String ADDITIONAL_NAME = "additional-name";
     public static final String FAMILY_NAME = "family-name";
     public static final String HONORIFIC_SUFFIX = "honorific-suffix";
-    public static final String USERNAME = "username"; // same as View.AUTOFILL_HINT_USERNAME
+    public static final String USERNAME = "username";
     public static final String NEW_PASSWORD = "new-password";
     public static final String CURRENT_PASSWORD = "current-password";
     public static final String ORGANIZATION_TITLE = "organization-title";
@@ -62,12 +60,10 @@ public final class W3cHints {
     public static final String SEX = "sex";
     public static final String URL = "url";
     public static final String PHOTO = "photo";
-
     // Optional W3C prefixes
     public static final String PREFIX_SECTION = "section-";
     public static final String SHIPPING = "shipping";
     public static final String BILLING = "billing";
-
     // W3C prefixes below...
     public static final String PREFIX_HOME = "home";
     public static final String PREFIX_WORK = "work";
@@ -84,4 +80,7 @@ public final class W3cHints {
     public static final String TEL_EXTENSION = "tel_extension";
     public static final String EMAIL = "email";
     public static final String IMPP = "impp";
+
+    private W3cHints() {
+    }
 }

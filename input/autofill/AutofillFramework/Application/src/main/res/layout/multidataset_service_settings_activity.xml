@@ -23,6 +23,7 @@
     android:importantForAutofill="no">
 
     <LinearLayout
+        android:id="@+id/settings_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -114,6 +115,30 @@
             android:layout_height="wrap_content"
             android:paddingTop="@dimen/spacing_normal"
             android:text="@string/settings_data_header"/>
+
+        <LinearLayout
+            android:id="@+id/settings_add_data_container"
+            style="@style/Settings.Container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/settings_add_data_label"
+                style="@style/Settings.Label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/settings_add_data_label" />
+
+            <ImageView
+                android:id="@+id/settings_add_data_icon"
+                style="@style/Settings.Switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/a11y_min_touch_target_dimen"
+                android:layout_marginStart="@dimen/padding_normal"
+                android:src="@drawable/ic_add_black_24dp"/>
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/settings_clear_data_container"

@@ -44,8 +44,15 @@
     <string name="settings_cancel">Cancel</string>
     <string name="settings_save">Save</string>
     <string name="settings_authenticate_responses">Authenticate responses</string>
-    <string name="settings_authenticate_datasets">Authenticate datasets</string>
-    <string name="settings_clear_data_label">Clear all data (including credentials)</string>
+    <string name="settings_authenticate_datasets">Authenticate Datasets</string>
+    <string name="settings_add_data_label">Add fake Autofill data</string>
+    <string name="settings_add_data_title">Add Autofill Datasets</string>
+    <string name="settings_select_number_of_datasets">Select number of Datasets.</string>
+    <plurals name="settings_add_data_success">
+        <item quantity="one">Added %d Dataset.</item>
+        <item quantity="other">Added %d Datasets.</item>
+    </plurals>
+    <string name="settings_clear_data_label">Clear all autofill data (including credentials)</string>
     <string name="settings_clear_data_confirmation">Are you sure you want to delete all autofill
         data from the sample service?
     </string>
@@ -59,6 +66,7 @@
     <string name="settings_auth_enter_current_password">Enter current password</string>
     <string name="settings_auth_enter_new_password">Enter new password</string>
     <string name="settings_auth_change_credentials_title">Change credentials</string>
+    <string name="settings_number_of_datasets_label">Number of Datasets</string>
     <string name="clear_label">Clear</string>
     <string name="login_label">Login</string>
     <string name="to_label">To</string>

@@ -19,6 +19,7 @@ import android.app.assist.AssistStructure;
 import android.app.assist.AssistStructure.ViewNode;
 import android.app.assist.AssistStructure.WindowNode;
 import android.util.Log;
+import android.view.autofill.AutofillValue;
 
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillField;
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
@@ -67,7 +68,20 @@ final class StructureParser {
             if (forFill) {
                 mAutofillFields.add(new AutofillFieldMetadata(viewNode));
             } else {
-                mFilledAutofillFieldCollection.add(new FilledAutofillField(viewNode));
+                FilledAutofillField filledAutofillField =
+                        new FilledAutofillField(viewNode.getAutofillHints());
+                AutofillValue autofillValue = viewNode.getAutofillValue();
+                if (autofillValue.isText()) {
+                    // Using toString of AutofillValue.getTextValue in order to save it to
+                    // SharedPreferences.
+                    filledAutofillField.setTextValue(autofillValue.getTextValue().toString());
+                } else if (autofillValue.isDate()) {
+                    filledAutofillField.setDateValue(autofillValue.getDateValue());
+                } else if (autofillValue.isList()) {
+                    filledAutofillField.setListValue(viewNode.getAutofillOptions(),
+                            autofillValue.getListValue());
+                }
+                mFilledAutofillFieldCollection.add(filledAutofillField);
             }
         }
         int childrenSize = viewNode.getChildCount();

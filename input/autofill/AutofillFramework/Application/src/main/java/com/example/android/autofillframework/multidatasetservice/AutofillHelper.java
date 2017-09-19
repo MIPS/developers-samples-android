@@ -22,7 +22,6 @@ import android.service.autofill.FillResponse;
 import android.service.autofill.SaveInfo;
 import android.support.annotation.DrawableRes;
 import android.util.Log;
-import android.view.View;
 import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
 
@@ -44,7 +43,8 @@ public final class AutofillHelper {
      * client View.
      */
     public static Dataset newDataset(Context context,
-            AutofillFieldMetadataCollection autofillFields, FilledAutofillFieldCollection filledAutofillFieldCollection, boolean datasetAuth) {
+            AutofillFieldMetadataCollection autofillFields,
+            FilledAutofillFieldCollection filledAutofillFieldCollection, boolean datasetAuth) {
         String datasetName = filledAutofillFieldCollection.getDatasetName();
         if (datasetName != null) {
             Dataset.Builder datasetBuilder;
@@ -52,14 +52,16 @@ public final class AutofillHelper {
                 datasetBuilder = new Dataset.Builder
                         (newRemoteViews(context.getPackageName(), datasetName,
                                 R.drawable.ic_lock_black_24dp));
-                IntentSender sender = AuthActivity.getAuthIntentSenderForDataset(context, datasetName);
+                IntentSender sender =
+                        AuthActivity.getAuthIntentSenderForDataset(context, datasetName);
                 datasetBuilder.setAuthentication(sender);
             } else {
                 datasetBuilder = new Dataset.Builder
                         (newRemoteViews(context.getPackageName(), datasetName,
                                 R.drawable.ic_person_black_24dp));
             }
-            boolean setValueAtLeastOnce = filledAutofillFieldCollection.applyToFields(autofillFields, datasetBuilder);
+            boolean setValueAtLeastOnce =
+                    filledAutofillFieldCollection.applyToFields(autofillFields, datasetBuilder);
             if (setValueAtLeastOnce) {
                 return datasetBuilder.build();
             }
@@ -69,7 +71,8 @@ public final class AutofillHelper {
 
     public static RemoteViews newRemoteViews(String packageName, String remoteViewsText,
             @DrawableRes int drawableId) {
-        RemoteViews presentation = new RemoteViews(packageName, R.layout.multidataset_service_list_item);
+        RemoteViews presentation =
+                new RemoteViews(packageName, R.layout.multidataset_service_list_item);
         presentation.setTextViewText(R.id.text, remoteViewsText);
         presentation.setImageViewResource(R.id.icon, drawableId);
         return presentation;
@@ -86,9 +89,11 @@ public final class AutofillHelper {
         if (clientFormDataMap != null) {
             Set<String> datasetNames = clientFormDataMap.keySet();
             for (String datasetName : datasetNames) {
-                FilledAutofillFieldCollection filledAutofillFieldCollection = clientFormDataMap.get(datasetName);
+                FilledAutofillFieldCollection filledAutofillFieldCollection =
+                        clientFormDataMap.get(datasetName);
                 if (filledAutofillFieldCollection != null) {
-                    Dataset dataset = newDataset(context, autofillFields, filledAutofillFieldCollection, datasetAuth);
+                    Dataset dataset = newDataset(context, autofillFields,
+                            filledAutofillFieldCollection, datasetAuth);
                     if (dataset != null) {
                         responseBuilder.addDataset(dataset);
                     }
@@ -110,85 +115,17 @@ public final class AutofillHelper {
         String[] filteredHints = new String[hints.length];
         int i = 0;
         for (String hint : hints) {
-            if (AutofillHelper.isValidHint(hint)) {
+            if (AutofillHints.isValidHint(hint)) {
                 filteredHints[i++] = hint;
             } else {
                 Log.d(TAG, "Invalid autofill hint: " + hint);
             }
         }
+        if (i == 0) {
+            return null;
+        }
         String[] finalFilteredHints = new String[i];
         System.arraycopy(filteredHints, 0, finalFilteredHints, 0, i);
         return finalFilteredHints;
-    }
-
-    public static boolean isValidHint(String hint) {
-        switch (hint) {
-            case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE:
-            case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY:
-            case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH:
-            case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR:
-            case View.AUTOFILL_HINT_CREDIT_CARD_NUMBER:
-            case View.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE:
-            case View.AUTOFILL_HINT_EMAIL_ADDRESS:
-            case View.AUTOFILL_HINT_PHONE:
-            case View.AUTOFILL_HINT_NAME:
-            case View.AUTOFILL_HINT_PASSWORD:
-            case View.AUTOFILL_HINT_POSTAL_ADDRESS:
-            case View.AUTOFILL_HINT_POSTAL_CODE:
-            case View.AUTOFILL_HINT_USERNAME:
-            case W3cHints.HONORIFIC_PREFIX:
-            case W3cHints.GIVEN_NAME:
-            case W3cHints.ADDITIONAL_NAME:
-            case W3cHints.FAMILY_NAME:
-            case W3cHints.HONORIFIC_SUFFIX:
-            case W3cHints.NEW_PASSWORD:
-            case W3cHints.CURRENT_PASSWORD:
-            case W3cHints.ORGANIZATION_TITLE:
-            case W3cHints.ORGANIZATION:
-            case W3cHints.STREET_ADDRESS:
-            case W3cHints.ADDRESS_LINE1:
-            case W3cHints.ADDRESS_LINE2:
-            case W3cHints.ADDRESS_LINE3:
-            case W3cHints.ADDRESS_LEVEL4:
-            case W3cHints.ADDRESS_LEVEL3:
-            case W3cHints.ADDRESS_LEVEL2:
-            case W3cHints.ADDRESS_LEVEL1:
-            case W3cHints.COUNTRY:
-            case W3cHints.COUNTRY_NAME:
-            case W3cHints.POSTAL_CODE:
-            case W3cHints.CC_NAME:
-            case W3cHints.CC_GIVEN_NAME:
-            case W3cHints.CC_ADDITIONAL_NAME:
-            case W3cHints.CC_FAMILY_NAME:
-            case W3cHints.CC_NUMBER:
-            case W3cHints.CC_EXPIRATION:
-            case W3cHints.CC_EXPIRATION_MONTH:
-            case W3cHints.CC_EXPIRATION_YEAR:
-            case W3cHints.CC_CSC:
-            case W3cHints.CC_TYPE:
-            case W3cHints.TRANSACTION_CURRENCY:
-            case W3cHints.TRANSACTION_AMOUNT:
-            case W3cHints.LANGUAGE:
-            case W3cHints.BDAY:
-            case W3cHints.BDAY_DAY:
-            case W3cHints.BDAY_MONTH:
-            case W3cHints.BDAY_YEAR:
-            case W3cHints.SEX:
-            case W3cHints.URL:
-            case W3cHints.PHOTO:
-            case W3cHints.TEL:
-            case W3cHints.TEL_COUNTRY_CODE:
-            case W3cHints.TEL_NATIONAL:
-            case W3cHints.TEL_AREA_CODE:
-            case W3cHints.TEL_LOCAL:
-            case W3cHints.TEL_LOCAL_PREFIX:
-            case W3cHints.TEL_LOCAL_SUFFIX:
-            case W3cHints.TEL_EXTENSION:
-            case W3cHints.EMAIL:
-            case W3cHints.IMPP:
-                return true;
-            default:
-                return false;
-        }
     }
 }

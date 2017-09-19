@@ -24,9 +24,9 @@ import android.view.autofill.AutofillValue;
 
 import com.example.android.autofillframework.multidatasetservice.AutofillFieldMetadata;
 import com.example.android.autofillframework.multidatasetservice.AutofillFieldMetadataCollection;
-import com.google.gson.annotations.Expose;
-import com.example.android.autofillframework.multidatasetservice.AutofillHelper;
+import com.example.android.autofillframework.multidatasetservice.AutofillHints;
 import com.example.android.autofillframework.multidatasetservice.W3cHints;
+import com.google.gson.annotations.Expose;
 
 import java.util.HashMap;
 import java.util.List;
@@ -142,52 +142,19 @@ public final class FilledAutofillFieldCollection {
             // Then check if the "actual" hint is supported.
 
 
-            if (AutofillHelper.isValidHint(hint)) {
-                mHintMap.put(transformHint(hint), filledAutofillField);
+            if (AutofillHints.isValidHint(hint)) {
+                mHintMap.put(AutofillHints.getStoredHintName(hint), filledAutofillField);
             } else {
                 Log.e(TAG, "Invalid hint: " + autofillHints[i]);
             }
         }
     }
 
-    public String transformHint(String hint) {
-        switch (hint) {
-            case W3cHints.NEW_PASSWORD:
-            case W3cHints.CURRENT_PASSWORD:
-                return View.AUTOFILL_HINT_PASSWORD;
-            case W3cHints.STREET_ADDRESS:
-                return View.AUTOFILL_HINT_POSTAL_ADDRESS;
-            case W3cHints.POSTAL_CODE:
-                return View.AUTOFILL_HINT_POSTAL_CODE;
-            case W3cHints.CC_NAME:
-            case W3cHints.GIVEN_NAME:
-            case W3cHints.CC_GIVEN_NAME:
-                return View.AUTOFILL_HINT_NAME;
-            case W3cHints.CC_ADDITIONAL_NAME:
-            case W3cHints.CC_NUMBER:
-                return View.AUTOFILL_HINT_CREDIT_CARD_NUMBER;
-            case W3cHints.CC_EXPIRATION:
-                return View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE;
-            case W3cHints.CC_EXPIRATION_MONTH:
-                return View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH;
-            case W3cHints.CC_EXPIRATION_YEAR:
-                return View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR;
-            case W3cHints.CC_CSC:
-                return View.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE;
-            case W3cHints.TEL:
-                return View.AUTOFILL_HINT_PHONE;
-            case W3cHints.EMAIL:
-                return View.AUTOFILL_HINT_EMAIL_ADDRESS;
-            default:
-                return hint;
-        }
-    }
-
     /**
      * Populates a {@link Dataset.Builder} with appropriate values for each {@link AutofillId}
      * in a {@code AutofillFieldMetadataCollection}.
-     *
      * <p>
+     *
      * In other words, it constructs an autofill
      * {@link Dataset.Builder} by applying saved values (from this {@code FilledAutofillFieldCollection})
      * to Views specified in a {@code AutofillFieldMetadataCollection}, which represents the current

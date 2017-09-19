@@ -15,11 +15,17 @@
  */
 package com.example.android.autofillframework.multidatasetservice.model;
 
-import android.app.assist.AssistStructure;
+import android.util.Log;
+import android.view.View;
 import android.view.autofill.AutofillValue;
 
 import com.example.android.autofillframework.multidatasetservice.AutofillHelper;
+import com.example.android.autofillframework.multidatasetservice.AutofillHints;
 import com.google.gson.annotations.Expose;
+
+import java.util.Arrays;
+
+import static com.example.android.autofillframework.CommonUtil.TAG;
 
 /**
  * JSON serializable data class containing the same data as an {@link AutofillValue}.
@@ -37,23 +43,19 @@ public class FilledAutofillField {
      */
     private String[] mAutofillHints = null;
 
-    public FilledAutofillField(AssistStructure.ViewNode viewNode) {
-        mAutofillHints = AutofillHelper.filterForSupportedHints(viewNode.getAutofillHints());
-        AutofillValue autofillValue = viewNode.getAutofillValue();
-        if (autofillValue != null) {
-            if (autofillValue.isList()) {
-                CharSequence[] autofillOptions = viewNode.getAutofillOptions();
-                int index = autofillValue.getListValue();
-                if (autofillOptions != null && autofillOptions.length > 0) {
-                    mTextValue = autofillOptions[index].toString();
-                }
-            } else if (autofillValue.isDate()) {
-                mDateValue = autofillValue.getDateValue();
-            } else if (autofillValue.isText()) {
-                // Using toString of AutofillValue.getTextValue in order to save it to
-                // SharedPreferences.
-                mTextValue = autofillValue.getTextValue().toString();
+    public FilledAutofillField(String... hints) {
+        mAutofillHints = AutofillHelper.filterForSupportedHints(hints);
+    }
+
+    public void setListValue(CharSequence[] autofillOptions, int listValue) {
+        /* Only set list value when a hint is allowed to store list values. */
+        if (AutofillHints.isValidTypeForHints(mAutofillHints, View.AUTOFILL_TYPE_LIST)) {
+            if (autofillOptions != null && autofillOptions.length > 0) {
+                mTextValue = autofillOptions[listValue].toString();
             }
+        } else {
+            Log.w(TAG, "List is invalid autofill type for hint(s) - " +
+                    Arrays.toString(mAutofillHints));
         }
     }
 
@@ -65,12 +67,42 @@ public class FilledAutofillField {
         return mTextValue;
     }
 
+    public void setTextValue(CharSequence textValue) {
+        /* Only set text value when a hint is allowed to store text values. */
+        if (AutofillHints.isValidTypeForHints(mAutofillHints, View.AUTOFILL_TYPE_TEXT)) {
+            mTextValue = textValue.toString();
+        } else {
+            Log.w(TAG, "Text is invalid autofill type for hint(s) - " +
+                    Arrays.toString(mAutofillHints));
+        }
+    }
+
     public Long getDateValue() {
         return mDateValue;
     }
 
+    public void setDateValue(Long dateValue) {
+        /* Only set date value when a hint is allowed to store date values. */
+        if (AutofillHints.isValidTypeForHints(mAutofillHints, View.AUTOFILL_TYPE_DATE)) {
+            mDateValue = dateValue;
+        } else {
+            Log.w(TAG, "Date is invalid autofill type for hint(s) - " +
+                    Arrays.toString(mAutofillHints));
+        }
+    }
+
     public Boolean getToggleValue() {
         return mToggleValue;
+    }
+
+    public void setToggleValue(Boolean toggleValue) {
+            /* Only set toggle value when a hint is allowed to store toggle values. */
+        if (AutofillHints.isValidTypeForHints(mAutofillHints, View.AUTOFILL_TYPE_TOGGLE)) {
+            mToggleValue = toggleValue;
+        } else {
+            Log.w(TAG, "Toggle is invalid autofill type for hint(s) - " +
+                    Arrays.toString(mAutofillHints));
+        }
     }
 
     public boolean isNull() {
@@ -88,7 +120,8 @@ public class FilledAutofillField {
             return false;
         if (mDateValue != null ? !mDateValue.equals(that.mDateValue) : that.mDateValue != null)
             return false;
-        return mToggleValue != null ? mToggleValue.equals(that.mToggleValue) : that.mToggleValue == null;
+        return mToggleValue != null ? mToggleValue.equals(that.mToggleValue) :
+                that.mToggleValue == null;
     }
 
     @Override

@@ -16,8 +16,6 @@
 package com.example.android.autofillframework.multidatasetservice;
 
 import android.app.assist.AssistStructure.ViewNode;
-import android.service.autofill.SaveInfo;
-import android.view.View;
 import android.view.autofill.AutofillId;
 
 /**
@@ -47,7 +45,7 @@ public class AutofillFieldMetadata {
 
     public void setHints(String[] hints) {
         mAutofillHints = hints;
-        updateSaveTypeFromHints();
+        mSaveType = AutofillHints.getSaveTypeForHints(hints);
     }
 
     public int getSaveType() {
@@ -77,74 +75,5 @@ public class AutofillFieldMetadata {
 
     public boolean isFocused() {
         return mFocused;
-    }
-
-    private void updateSaveTypeFromHints() {
-        mSaveType = 0;
-        if (mAutofillHints == null) {
-            return;
-        }
-        for (String hint : mAutofillHints) {
-            switch (hint) {
-                case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE:
-                case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY:
-                case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH:
-                case View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR:
-                case View.AUTOFILL_HINT_CREDIT_CARD_NUMBER:
-                case View.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE:
-                case W3cHints.CC_NAME:
-                case W3cHints.CC_GIVEN_NAME:
-                case W3cHints.CC_ADDITIONAL_NAME:
-                case W3cHints.CC_FAMILY_NAME:
-                case W3cHints.CC_NUMBER:
-                case W3cHints.CC_EXPIRATION:
-                case W3cHints.CC_EXPIRATION_MONTH:
-                case W3cHints.CC_EXPIRATION_YEAR:
-                case W3cHints.CC_CSC:
-                case W3cHints.CC_TYPE:
-                case W3cHints.TRANSACTION_CURRENCY:
-                case W3cHints.TRANSACTION_AMOUNT:
-                    mSaveType |= SaveInfo.SAVE_DATA_TYPE_CREDIT_CARD;
-                    break;
-                case View.AUTOFILL_HINT_EMAIL_ADDRESS:
-                case W3cHints.EMAIL:
-                    mSaveType |= SaveInfo.SAVE_DATA_TYPE_EMAIL_ADDRESS;
-                    break;
-                case View.AUTOFILL_HINT_PASSWORD:
-                case W3cHints.NEW_PASSWORD:
-                case W3cHints.CURRENT_PASSWORD:
-                    mSaveType |= SaveInfo.SAVE_DATA_TYPE_PASSWORD;
-                    mSaveType &= ~SaveInfo.SAVE_DATA_TYPE_EMAIL_ADDRESS;
-                    mSaveType &= ~SaveInfo.SAVE_DATA_TYPE_USERNAME;
-                    break;
-                case View.AUTOFILL_HINT_POSTAL_ADDRESS:
-                case View.AUTOFILL_HINT_POSTAL_CODE:
-                case W3cHints.STREET_ADDRESS:
-                case W3cHints.ADDRESS_LINE1:
-                case W3cHints.ADDRESS_LINE2:
-                case W3cHints.ADDRESS_LINE3:
-                case W3cHints.ADDRESS_LEVEL4:
-                case W3cHints.ADDRESS_LEVEL3:
-                case W3cHints.ADDRESS_LEVEL2:
-                case W3cHints.ADDRESS_LEVEL1:
-                case W3cHints.COUNTRY:
-                case W3cHints.COUNTRY_NAME:
-                case W3cHints.POSTAL_CODE:
-                    mSaveType |= SaveInfo.SAVE_DATA_TYPE_ADDRESS;
-                    break;
-                case View.AUTOFILL_HINT_NAME:
-                case View.AUTOFILL_HINT_PHONE:
-                case View.AUTOFILL_HINT_USERNAME:
-                case W3cHints.HONORIFIC_PREFIX:
-                case W3cHints.GIVEN_NAME:
-                case W3cHints.ADDITIONAL_NAME:
-                case W3cHints.FAMILY_NAME:
-                case W3cHints.HONORIFIC_SUFFIX:
-                    mSaveType |= SaveInfo.SAVE_DATA_TYPE_USERNAME;
-                    break;
-                default:
-                    mSaveType |= SaveInfo.SAVE_DATA_TYPE_GENERIC;
-            }
-        }
     }
 }
