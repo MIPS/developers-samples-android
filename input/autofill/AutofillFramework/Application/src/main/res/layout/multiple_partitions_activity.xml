@@ -42,12 +42,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/ic_info_black_24dp"
-        app:layout_constraintBottom_toBottomOf="@+id/custom_virtual_login_header"
+        app:layout_constraintBottom_toBottomOf="@+id/multiple_partitions_header"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/custom_virtual_login_header"
-        app:layout_constraintTop_toTopOf="@+id/custom_virtual_login_header"
-        app:dialogText="@string/custom_virtual_login_info"/>
+        app:layout_constraintStart_toEndOf="@+id/multiple_partitions_header"
+        app:layout_constraintTop_toTopOf="@+id/multiple_partitions_header"
+        app:dialogText="@string/multiple_partitions"/>
 
     <com.example.android.autofillframework.app.ScrollableCustomVirtualView
         android:id="@+id/custom_view"
@@ -57,7 +57,7 @@
         android:layout_marginStart="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/custom_virtual_login_header" />
+        app:layout_constraintTop_toBottomOf="@+id/multiple_partitions_header" />
 
     <TextView
         android:id="@+id/clear"
@@ -65,13 +65,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_normal"
-        android:layout_marginTop="@dimen/spacing_normal"
+        android:layout_marginTop="@dimen/spacing_large"
         android:text="@string/clear_label"
         android:textColor="@android:color/holo_blue_dark"
-        app:layout_constraintEnd_toStartOf="@+id/login"
+        app:layout_constraintEnd_toStartOf="@+id/submit"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/custom_view" />
+
+    <TextView
+        android:id="@+id/submit"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/spacing_normal"
+        android:layout_marginStart="@dimen/spacing_normal"
+        android:text="@string/submit_label"
+        android:textColor="@android:color/holo_blue_dark"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/clear"
+        app:layout_constraintTop_toTopOf="@+id/clear" />
 
 </android.support.constraint.ConstraintLayout>

@@ -32,13 +32,13 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
  * parses the hierarchy and collects autofill metadata from {@link ViewNode}s along the way.
  */
 final class StructureParser {
-    private final AutofillFieldMetadataCollection mAutofillFields = new AutofillFieldMetadataCollection();
+    private final AutofillFieldMetadataCollection mAutofillFields =
+            new AutofillFieldMetadataCollection();
     private final AssistStructure mStructure;
     private FilledAutofillFieldCollection mFilledAutofillFieldCollection;
 
     StructureParser(AssistStructure structure) {
         mStructure = structure;
-
     }
 
     public void parseForFill() {

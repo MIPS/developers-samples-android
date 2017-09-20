@@ -15,9 +15,6 @@
  */
 package com.example.android.autofillframework.app;
 
-import static com.example.android.autofillframework.CommonUtil.DEBUG;
-import static com.example.android.autofillframework.CommonUtil.TAG;
-
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -35,8 +32,10 @@ import android.widget.EditText;
 
 import com.example.android.autofillframework.R;
 
-import java.lang.reflect.Field;
 import java.util.Calendar;
+
+import static com.example.android.autofillframework.CommonUtil.DEBUG;
+import static com.example.android.autofillframework.CommonUtil.TAG;
 
 /**
  * A custom view that represents a {@link View#AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE} using
@@ -47,7 +46,9 @@ public class CreditCardExpirationDatePickerView extends EditText {
 
     private static final int CC_EXP_YEARS_COUNT = 5;
 
-    /** Calendar instance used for month / year calculations. Should be reset before each use. */
+    /**
+     * Calendar instance used for month / year calculations. Should be reset before each use.
+     */
     private final Calendar mTempCalendar;
 
     private int mMonth;

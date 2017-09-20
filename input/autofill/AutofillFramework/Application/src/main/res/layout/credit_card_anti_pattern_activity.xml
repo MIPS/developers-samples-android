@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 -->
-<!--  TODO: fix this layout -->
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/authLayout"
@@ -32,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="@string/navigation_button_credit_card_label"
+        android:text="@string/navigation_button_anti_pattern_credit_card_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/imageButton"
         app:layout_constraintHorizontal_bias="0.5"
@@ -81,82 +80,29 @@
         app:layout_constraintTop_toTopOf="@+id/creditCardNumberLabel" />
 
     <TextView
-        android:id="@+id/expirationDayLabel"
+        android:id="@+id/creditCardExpirationLabel"
         style="@style/TextAppearance.AppCompat.Body1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_large"
-        android:importantForAutofill="no"
-        android:labelFor="@+id/expirationDay"
-        android:text="@string/credit_card_expiration_day_label"
-        app:layout_constraintEnd_toStartOf="@+id/creditCardNumberLabel"
-        app:layout_constraintStart_toStartOf="parent"
+        android:labelFor="@+id/creditCardExpirationView"
+        android:text="@string/credit_card_expiration_label"
+        app:layout_constraintStart_toStartOf="@id/creditCardNumberLabel"
         app:layout_constraintTop_toBottomOf="@+id/creditCardNumberLabel" />
 
     <EditText
-        android:id="@+id/expirationDay"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/expirationDayLabel"
-        android:layout_marginEnd="8dp"
-        android:inputType="number"
-        android:autofillHints="creditCardExpirationDay"
-        app:layout_constraintBottom_toBottomOf="@+id/expirationDayLabel"
-        app:layout_constraintEnd_toEndOf="@+id/creditCardNumberField"
-        app:layout_constraintStart_toStartOf="@+id/creditCardNumberField"
-        app:layout_constraintTop_toTopOf="@+id/expirationDayLabel" />
-
-    <TextView
-        android:id="@+id/expirationMonthLabel"
-        style="@style/TextAppearance.AppCompat.Body1"
+        android:id="@+id/creditCardExpirationView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_large"
-        android:importantForAutofill="no"
-        android:labelFor="@+id/expirationMonth"
-        android:text="@string/credit_card_expiration_month_label"
-        app:layout_constraintEnd_toStartOf="@+id/expirationDay"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/expirationDay" />
-
-    <EditText
-        android:id="@+id/expirationMonth"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/expirationMonthLabel"
-        android:layout_marginEnd="8dp"
-        android:inputType="number"
-        android:autofillHints="creditCardExpirationMonth"
-        app:layout_constraintBottom_toBottomOf="@+id/expirationMonthLabel"
-        app:layout_constraintEnd_toEndOf="@+id/expirationDay"
-        app:layout_constraintStart_toStartOf="@+id/expirationDay"
-        app:layout_constraintTop_toTopOf="@+id/expirationMonthLabel" />
-
-    <TextView
-        android:id="@+id/expirationYearLabel"
-        style="@style/TextAppearance.AppCompat.Body1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_large"
-        android:importantForAutofill="no"
-        android:labelFor="@+id/expirationYear"
-        android:text="@string/credit_card_expiration_year_label"
-        app:layout_constraintEnd_toStartOf="@+id/expirationMonth"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/expirationMonth" />
-
-    <EditText
-        android:id="@+id/expirationYear"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/expirationYearLabel"
-        android:layout_marginEnd="8dp"
-        android:inputType="number"
-        android:autofillHints="creditCardExpirationYear"
-        app:layout_constraintBottom_toBottomOf="@+id/expirationYearLabel"
-        app:layout_constraintEnd_toEndOf="@+id/expirationMonth"
-        app:layout_constraintStart_toStartOf="@+id/expirationMonth"
-        app:layout_constraintTop_toTopOf="@+id/expirationYearLabel" />
+        android:layout_marginStart="@dimen/spacing_normal"
+        android:layout_marginTop="@dimen/spacing_normal"
+        android:autofillHints="creditCardExpirationDate"
+        android:ems="12"
+        android:paddingHorizontal="@dimen/spacing_micro"
+        app:layout_constraintBottom_toBottomOf="@+id/creditCardExpirationLabel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/creditCardExpirationLabel"
+        app:layout_constraintTop_toTopOf="@+id/creditCardExpirationLabel" />
 
     <TextView
         android:id="@+id/creditCardSecurityCodeLabel"
@@ -166,9 +112,9 @@
         android:layout_marginTop="@dimen/spacing_large"
         android:importantForAutofill="no"
         android:text="@string/credit_card_security_code_label"
-        app:layout_constraintEnd_toStartOf="@+id/expirationYear"
+        app:layout_constraintEnd_toStartOf="@+id/creditCardExpirationView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/expirationYear" />
+        app:layout_constraintTop_toBottomOf="@+id/creditCardExpirationView" />
 
     <EditText
         android:id="@+id/creditCardSecurityCode"
@@ -179,8 +125,8 @@
         android:inputType="number"
         android:autofillHints="creditCardSecurityCode"
         app:layout_constraintBottom_toBottomOf="@+id/creditCardSecurityCodeLabel"
-        app:layout_constraintEnd_toEndOf="@+id/expirationYear"
-        app:layout_constraintStart_toStartOf="@+id/expirationYear"
+        app:layout_constraintEnd_toEndOf="@+id/creditCardExpirationView"
+        app:layout_constraintStart_toStartOf="@+id/creditCardExpirationView"
         app:layout_constraintTop_toTopOf="@+id/creditCardSecurityCodeLabel" />
 
     <TextView

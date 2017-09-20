@@ -20,30 +20,27 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.autofill.AutofillManager;
 import android.widget.EditText;
 
 import com.example.android.autofillframework.R;
 
-import static com.example.android.autofillframework.CommonUtil.TAG;
+public class CreditCardAntiPatternActivity extends AppCompatActivity {
 
-public class CreditCardDatePickerActivity extends AppCompatActivity {
-
-    private CreditCardExpirationDatePickerView mCcExpDateView;
+    private EditText mCcExpDateView;
     private EditText mCcExpNumber;
     private EditText mCcSecurityCode;
 
     public static Intent getStartActivityIntent(Context context) {
-        Intent intent = new Intent(context, CreditCardDatePickerActivity.class);
+        Intent intent = new Intent(context, CreditCardAntiPatternActivity.class);
         return intent;
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.credit_card_date_picker_activity);
+        setContentView(R.layout.credit_card_anti_pattern_activity);
         mCcExpDateView = findViewById(R.id.creditCardExpirationView);
         mCcExpNumber = findViewById(R.id.creditCardNumberField);
         mCcSecurityCode = findViewById(R.id.creditCardSecurityCode);
@@ -60,25 +57,13 @@ public class CreditCardDatePickerActivity extends AppCompatActivity {
                 resetFields();
             }
         });
-
-        // TODO: fix out style to display as an EditText?
-        mCcExpDateView.reset();
     }
 
     private void resetFields() {
-        mCcExpDateView.reset();
+        mCcExpDateView.setText("");
         mCcExpNumber.setText("");
         mCcSecurityCode.setText("");
     }
-
-    public void showDatePickerDialog(View v) {
-        if (v != mCcExpDateView) {
-            Log.w(TAG, "showDatePickerDialog() called on invalid view: " + v);
-            return;
-        }
-        mCcExpDateView.showDatePickerDialog(getSupportFragmentManager());
-    }
-
 
     /**
      * Launches new Activity and finishes, triggering an autofill save request if the user entered

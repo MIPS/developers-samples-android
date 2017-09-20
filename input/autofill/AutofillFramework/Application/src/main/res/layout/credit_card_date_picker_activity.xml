@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="@string/navigation_button_compound_view_credit_card_label"
+        android:text="@string/navigation_button_date_picker_credit_card_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/imageButton"
         app:layout_constraintHorizontal_bias="0.5"
@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_normal"
         android:background="@drawable/ic_info_black_24dp"
-        app:dialogText="@string/compound_view_credit_card_info"
+        app:dialogText="@string/date_picker_credit_card_info"
         app:layout_constraintBottom_toBottomOf="@+id/standard_login_header"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -112,7 +112,7 @@
         android:layout_marginTop="@dimen/spacing_large"
         android:importantForAutofill="no"
         android:text="@string/credit_card_security_code_label"
-        app:layout_constraintEnd_toStartOf="@+id/expirationDate"
+        app:layout_constraintEnd_toStartOf="@+id/creditCardExpirationView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/creditCardExpirationView" />
 

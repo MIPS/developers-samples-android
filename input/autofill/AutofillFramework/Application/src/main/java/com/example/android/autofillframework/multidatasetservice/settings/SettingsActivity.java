@@ -36,7 +36,6 @@ import com.example.android.autofillframework.R;
 import com.example.android.autofillframework.multidatasetservice.AutofillHints;
 import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsAutofillRepository;
 import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsPackageVerificationRepository;
-import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillField;
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 
 public class SettingsActivity extends AppCompatActivity {

@@ -36,10 +36,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.autofillframework.CommonUtil;
 import com.example.android.autofillframework.R;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import static com.example.android.autofillframework.CommonUtil.bundleToString;
 
@@ -48,35 +51,29 @@ import static com.example.android.autofillframework.CommonUtil.bundleToString;
  */
 public class CustomVirtualView extends View {
 
-    private static final String TAG = "CustomView";
     protected static final boolean DEBUG = true;
     protected static final boolean VERBOSE = false;
-
+    private static final String TAG = "CustomView";
     private static final int TOP_MARGIN = 100;
     private static final int LEFT_MARGIN = 100;
-    private static final int TEXT_HEIGHT = 90;
+    private static final int TEXT_HEIGHT = 70;
     private static final int VERTICAL_GAP = 10;
     private static final int LINE_HEIGHT = TEXT_HEIGHT + VERTICAL_GAP;
     private static final int UNFOCUSED_COLOR = Color.BLACK;
     private static final int FOCUSED_COLOR = Color.RED;
     private static int sNextId;
-
+    protected final AutofillManager mAutofillManager;
     private final ArrayList<Line> mVirtualViewGroups = new ArrayList<>();
     private final SparseArray<Item> mVirtualViews = new SparseArray<>();
-
     private final SparseArray<Partition> mPartitionsByAutofillId = new SparseArray<>();
     private final ArrayMap<String, Partition> mPartitionsByName = new ArrayMap<>();
-
-    protected final AutofillManager mAutofillManager;
-
     protected Line mFocusedLine;
+    protected int mTopMargin;
+    protected int mLeftMargin;
     private Paint mTextPaint;
-
     private int mTextHeight;
     private int mVerticalGap;
     private int mLineLength;
-    protected int mTopMargin;
-    protected int mLeftMargin;
 
     public CustomVirtualView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -99,6 +96,8 @@ public class CustomVirtualView extends View {
 
     @Override
     public void autofill(SparseArray<AutofillValue> values) {
+        Context context = getContext();
+
         // User has just selected a Dataset from the list of autofill suggestions.
         // The Dataset is comprised of a list of AutofillValues, with each AutofillValue meant
         // to fill a specific autofillable view. Now we have to update the UI based on the
@@ -112,7 +111,7 @@ public class CustomVirtualView extends View {
             int id = values.keyAt(i);
             Partition partition = mPartitionsByAutofillId.get(id);
             if (partition == null) {
-                showError(getContext().getString(R.string.message_autofill_no_partitions, id,
+                showError(context.getString(R.string.message_autofill_no_partitions, id,
                         mPartitionsByAutofillId));
                 return;
             }
@@ -121,26 +120,49 @@ public class CustomVirtualView extends View {
 
         // Then make sure they follow the Highlander rule (There can be only one)
         if (partitions.size() != 1) {
-            showError(getContext().getString(R.string.message_autofill_blocked, partitions));
+            showError(context.getString(R.string.message_autofill_blocked, partitions));
             return;
         }
 
         // Finally, autofill it.
+        DateFormat df = android.text.format.DateFormat.getDateFormat(context);
         for (int i = 0; i < values.size(); i++) {
             int id = values.keyAt(i);
             AutofillValue value = values.valueAt(i);
             Item item = mVirtualViews.get(id);
-            if (item != null && item.editable) {
-                // Set the item's text to the text wrapped in the AutofillValue.
-                item.text = value.getTextValue();
-            } else if (item == null) {
+
+            if (item == null) {
                 Log.w(TAG, "No item for id " + id);
+                continue;
+            }
+
+            if (!item.editable) {
+                showError(context.getString(R.string.message_autofill_readonly, item.text));
+                continue;
+            }
+
+            // Check if the type was properly set by the autofill service
+            if (DEBUG) {
+                Log.d(TAG, "Validating " + i
+                        + ": expectedType=" + CommonUtil.getTypeAsString(item.type)
+                        + "(" + item.type + "), value=" + value);
+            }
+            boolean valid = false;
+            if (value.isText() && item.type == AUTOFILL_TYPE_TEXT) {
+                item.text = value.getTextValue();
+                valid = true;
+            } else if (value.isDate() && item.type == AUTOFILL_TYPE_DATE) {
+                item.text = df.format(new Date(value.getDateValue()));
+                valid = true;
             } else {
-                Log.w(TAG, "Item for id " + id + " is not editable: " + item);
+                Log.w(TAG, "Unsupported type: " + value);
+            }
+            if (!valid) {
+                item.text = context.getString(R.string.message_autofill_invalid);
             }
         }
         postInvalidate();
-        showMessage(getContext().getString(R.string.message_autofill_ok, partitions.valueAt(0)));
+        showMessage(context.getString(R.string.message_autofill_ok, partitions.valueAt(0)));
     }
 
     @Override
@@ -163,14 +185,14 @@ public class CustomVirtualView extends View {
             child.setAutofillId(structure.getAutofillId(), item.id);
             child.setAutofillHints(item.hints);
             child.setAutofillType(item.type);
+            child.setAutofillValue(item.getAutofillValue());
             child.setDataIsSensitive(!item.sanitized);
-            if (TextUtils.getTrimmedLength(item.text) > 0) {
-                child.setAutofillValue(AutofillValue.forText(item.text));
-            }
             child.setFocused(item.focused);
-            child.setId(item.id, getContext().getPackageName(), null, item.line.mIdEntry);
+            child.setVisibility(View.VISIBLE);
+            child.setDimens(item.line.mBounds.left, item.line.mBounds.top, 0, 0,
+                    item.line.mBounds.width(), item.line.mBounds.height());
+            child.setId(item.id, getContext().getPackageName(), null, item.idEntry);
             child.setClassName(item.getClassName());
-            child.setVisibility(item.line.mVisible ? View.VISIBLE : View.INVISIBLE);
             child.setDimens(item.line.mBounds.left, item.line.mBounds.top, 0, 0,
                     item.line.mBounds.width(), item.line.mBounds.height());
             index++;
@@ -188,10 +210,6 @@ public class CustomVirtualView extends View {
         float y = mTopMargin + mLineLength;
         for (int i = 0; i < mVirtualViewGroups.size(); i++) {
             Line line = mVirtualViewGroups.get(i);
-            if (!line.mVisible) {
-                if (VERBOSE) Log.v(TAG, "onDraw(): skipping invisible line " + line);
-                continue;
-            }
             x = mLeftMargin;
             if (VERBOSE) Log.v(TAG, "Drawing '" + line + "' at " + x + "x" + y);
             mTextPaint.setColor(line.mFieldTextItem.focused ? FOCUSED_COLOR : UNFOCUSED_COLOR);
@@ -230,10 +248,6 @@ public class CustomVirtualView extends View {
         int upperY = -1;
         for (int i = 0; i < mVirtualViewGroups.size(); i++) {
             Line line = mVirtualViewGroups.get(i);
-            if (!line.mVisible) {
-                if (VERBOSE) Log.v(TAG, "onMotion(): skipping invisible line " + line);
-                continue;
-            }
             upperY = lowerY + mLineLength;
             if (DEBUG) Log.d(TAG, "Line " + i + " ranges from " + lowerY + " to " + upperY);
             if (lowerY <= y && y <= upperY) {
@@ -288,19 +302,22 @@ public class CustomVirtualView extends View {
 
 
     protected static final class Item {
-        private final Line line;
         protected final int id;
+        private final String idEntry;
+        private final Line line;
         private final boolean editable;
         private final boolean sanitized;
         private final String[] hints;
         private final int type;
         private CharSequence text;
         private boolean focused = false;
+        private long date;
 
-        Item(Line line, int id, String[] hints, int type, CharSequence text, boolean editable,
-                boolean sanitized) {
+        Item(Line line, int id, String idEntry, String[] hints, int type, CharSequence text,
+                boolean editable,boolean sanitized) {
             this.line = line;
             this.id = id;
+            this.idEntry = idEntry;
             this.text = text;
             this.editable = editable;
             this.sanitized = sanitized;
@@ -310,12 +327,29 @@ public class CustomVirtualView extends View {
 
         @Override
         public String toString() {
-            return id + ": " + text + (editable ? " (editable)" : " (read-only)"
-                    + (sanitized ? " (sanitized)" : " (sensitive"));
+            return id + "/" + idEntry + ": "
+                    + (type == AUTOFILL_TYPE_DATE ? date : text) // TODO: use DateFormater for date
+                    + " (" + CommonUtil.getTypeAsString(type) + ")"
+                    + (editable ? " (editable)" : " (read-only)"
+                    + (sanitized ? " (sanitized)" : " (sensitive"))
+                    + (hints == null ? " (no hints)" : " ( " + Arrays.toString(hints) + ")");
         }
 
         public String getClassName() {
             return editable ? EditText.class.getName() : TextView.class.getName();
+        }
+
+        public AutofillValue getAutofillValue() {
+            switch (type) {
+                case AUTOFILL_TYPE_TEXT:
+                    return (TextUtils.getTrimmedLength(text) > 0)
+                            ? AutofillValue.forText(text)
+                            : null;
+                case AUTOFILL_TYPE_DATE:
+                    return AutofillValue.forDate(date);
+                default:
+                    return null;
+            }
         }
     }
 
@@ -333,17 +367,24 @@ public class CustomVirtualView extends View {
         /**
          * Adds a new line (containining a label and an input field) to the view.
          *
-         * @param idEntry id used to identify the line.
-         * @param label text used in the label.
-         * @param text initial text used in the input field.
-         * @param sensitive whether the input is considered sensitive.
-         * @param hints list of autofill hints.
-         *
+         * @param idEntryPrefix id prefix used to identify the line - label node will be suffixed
+         * with {@code Label} and editable node with {@code Field}.
+         * @param autofillType  {@link View#getAutofillType() autofill type} of the field.
+         * @param label         text used in the label.
+         * @param text          initial text used in the input field.
+         * @param sensitive     whether the input is considered sensitive.
+         * @param autofillHints list of autofill hints.
          * @return the new line.
          */
-        public Line addLine(String idEntry, String label, String text, boolean sensitive,
-                String... hints) {
-            Line line = new Line(idEntry, label, hints, text, !sensitive);
+        public Line addLine(String idEntryPrefix, int autofillType, String label, String text,
+                boolean sensitive, String... autofillHints) {
+            // TODO: use PreConditions
+            if (autofillType != AUTOFILL_TYPE_TEXT && autofillType != AUTOFILL_TYPE_DATE) {
+                throw new IllegalArgumentException("unsupported type: " + autofillType);
+            }
+
+            Line line = new Line(idEntryPrefix, autofillType, label, autofillHints, text,
+                    !sensitive);
             mVirtualViewGroups.add(line);
             int id = line.mFieldTextItem.id;
             mLines.put(id, line);
@@ -363,16 +404,6 @@ public class CustomVirtualView extends View {
             }
         }
 
-        /**
-         * Sets whether the lines in this partition are visible or not.
-         */
-        public void setVisibility(boolean visible) {
-            for (int i = 0; i < mLines.size(); i++) {
-                mLines.valueAt(i).mVisible = visible;
-            }
-            invalidate();
-        }
-
         @Override
         public String toString() {
             return mName;
@@ -384,19 +415,19 @@ public class CustomVirtualView extends View {
      */
     public final class Line {
 
+        protected final Item mFieldTextItem;
         // Boundaries of the text field, relative to the CustomView
         private final Rect mBounds = new Rect();
         private final Item mLabelItem;
-        protected final Item mFieldTextItem;
-        private final String mIdEntry;
-        private boolean mVisible = true;
+        private final int mAutofillType;
 
-        private Line(String idEntry, String label, String[] hints, String text, boolean sanitized) {
-            this.mIdEntry = idEntry;
-            this.mLabelItem = new Item(this, ++sNextId, null, AUTOFILL_TYPE_NONE, label,
-                    false, true);
-            this.mFieldTextItem = new Item(this, ++sNextId, hints, AUTOFILL_TYPE_TEXT, text,
-                    true, sanitized);
+        private Line(String idEntryPrefix, int autofillType, String label, String[] hints,
+                String text, boolean sanitized) {
+            this.mAutofillType = autofillType;
+            this.mLabelItem = new Item(this, ++sNextId, idEntryPrefix + "Label", null,
+                    AUTOFILL_TYPE_NONE, label, false, true);
+            this.mFieldTextItem = new Item(this, ++sNextId, idEntryPrefix + "Field", hints,
+                    autofillType, text, true, sanitized);
         }
 
         private void changeFocus(boolean focused) {
@@ -445,7 +476,7 @@ public class CustomVirtualView extends View {
         @Override
         public String toString() {
             return "Label: " + mLabelItem + " Text: " + mFieldTextItem + " Focused: " +
-                    mFieldTextItem.focused + " Visible: " + mVisible;
+                    mFieldTextItem.focused + " Type: " + mAutofillType;
         }
     }
 }

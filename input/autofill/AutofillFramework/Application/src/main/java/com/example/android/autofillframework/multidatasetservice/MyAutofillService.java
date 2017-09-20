@@ -41,8 +41,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.example.android.autofillframework.CommonUtil.DEBUG;
 import static com.example.android.autofillframework.CommonUtil.TAG;
 import static com.example.android.autofillframework.CommonUtil.bundleToString;
+import static com.example.android.autofillframework.CommonUtil.dumpStructure;
 
 public class MyAutofillService extends AutofillService {
 
@@ -59,7 +61,10 @@ public class MyAutofillService extends AutofillService {
             return;
         }
         final Bundle data = request.getClientState();
-        Log.d(TAG, "onFillRequest(): data=" + bundleToString(data));
+        if (DEBUG) {
+            Log.d(TAG, "onFillRequest(): data=" + bundleToString(data));
+            dumpStructure(structure);
+        }
 
         cancellationSignal.setOnCancelListener(new CancellationSignal.OnCancelListener() {
             @Override
@@ -108,7 +113,10 @@ public class MyAutofillService extends AutofillService {
             return;
         }
         final Bundle data = request.getClientState();
-        Log.d(TAG, "onSaveRequest(): data=" + bundleToString(data));
+        if (DEBUG) {
+            Log.d(TAG, "onSaveRequest(): data=" + bundleToString(data));
+            dumpStructure(structure);
+        }
         StructureParser parser = new StructureParser(structure);
         parser.parseForSave();
         FilledAutofillFieldCollection filledAutofillFieldCollection = parser.getClientFormData();

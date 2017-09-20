@@ -15,7 +15,6 @@
  */
 package com.example.android.autofillframework.app;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -43,12 +42,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         NavigationItem loginEditTexts = findViewById(R.id.standardViewSignInButton);
         NavigationItem loginCustomVirtual = findViewById(R.id.virtualViewSignInButton);
-        NavigationItem creditCardSpinners = findViewById(R.id.creditCardCheckoutButton);
+        NavigationItem creditCard = findViewById(R.id.creditCardButton);
+        NavigationItem creditCardSpinners = findViewById(R.id.creditCardSpinnersButton);
         NavigationItem loginAutoComplete = findViewById(R.id.standardLoginWithAutoCompleteButton);
         NavigationItem emailCompose = findViewById(R.id.emailComposeButton);
         NavigationItem creditCardCompoundView = findViewById(R.id.creditCardCompoundViewButton);
         NavigationItem creditCardDatePicker = findViewById(R.id.creditCardDatePickerButton);
-        NavigationItem mulitplePartitions = findViewById(R.id.multiplePartitionsButton);
+        NavigationItem creditCardAntiPatternPicker = findViewById(R.id.creditCardAntiPatternButton);
+        NavigationItem multiplePartitions = findViewById(R.id.multiplePartitionsButton);
         NavigationItem loginWebView = findViewById(R.id.webviewSignInButton);
         loginEditTexts.setNavigationButtonClickListener(new View.OnClickListener() {
             @Override
@@ -62,10 +63,16 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(VirtualSignInActivity.getStartActivityIntent(MainActivity.this));
             }
         });
-        creditCardSpinners.setNavigationButtonClickListener(new View.OnClickListener() {
+        creditCard.setNavigationButtonClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(CreditCardActivity.getStartActivityIntent(MainActivity.this));
+            }
+        });
+        creditCardSpinners.setNavigationButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(CreditCardSpinnersActivity.getStartActivityIntent(MainActivity.this));
             }
         });
         loginAutoComplete.setNavigationButtonClickListener(new View.OnClickListener() {
@@ -92,7 +99,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(CreditCardDatePickerActivity.getStartActivityIntent(MainActivity.this));
             }
         });
-        mulitplePartitions.setNavigationButtonClickListener(new View.OnClickListener() {
+        creditCardAntiPatternPicker.setNavigationButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(CreditCardAntiPatternActivity.getStartActivityIntent(MainActivity.this));
+            }
+        });
+        multiplePartitions.setNavigationButtonClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(MultiplePartitionsActivity.getStartActivityIntent(MainActivity.this));
@@ -115,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Intent newIntent = new Intent(this,
                             Class.forName("com.example.android.autofillframework." + target));
+                    newIntent.putExtras(intent);
+                    newIntent.removeExtra("target");
                     getApplicationContext().startActivity(newIntent);
                     finish();
                     return true;

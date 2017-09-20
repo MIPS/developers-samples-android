@@ -111,7 +111,7 @@
         android:layout_marginTop="@dimen/spacing_large"
         android:importantForAutofill="no"
         android:text="@string/credit_card_security_code_label"
-        app:layout_constraintEnd_toStartOf="@+id/expirationDate"
+        app:layout_constraintEnd_toStartOf="@+id/creditCardExpirationView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/creditCardExpirationView" />
 

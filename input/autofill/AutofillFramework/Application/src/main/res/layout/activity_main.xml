@@ -64,7 +64,7 @@
             app:labelText="@string/navigation_button_web_view_login_label" />
 
         <com.example.android.autofillframework.app.NavigationItem
-            android:id="@+id/creditCardCheckoutButton"
+            android:id="@+id/creditCardSpinnersButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:imageColor="@android:color/holo_orange_dark"
@@ -107,5 +107,23 @@
             app:labelText="@string/navigation_button_multiple_partitions_label"
             app:itemLogo="@drawable/ic_custom_virtual_logo_24dp"
             app:imageColor="@android:color/holo_green_dark"/>
+
+        <com.example.android.autofillframework.app.NavigationItem
+            android:id="@+id/creditCardButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:imageColor="@android:color/holo_orange_dark"
+            app:infoText="@string/credit_card_info"
+            app:itemLogo="@drawable/ic_spinners_logo_24dp"
+            app:labelText="@string/navigation_button_credit_card_label" />
+
+        <com.example.android.autofillframework.app.NavigationItem
+            android:id="@+id/creditCardAntiPatternButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:imageColor="@android:color/holo_orange_dark"
+            app:infoText="@string/anti_pattern_credit_card_info"
+            app:itemLogo="@drawable/ic_spinners_logo_24dp"
+            app:labelText="@string/navigation_button_anti_pattern_credit_card_label" />
     </LinearLayout>
 </ScrollView>

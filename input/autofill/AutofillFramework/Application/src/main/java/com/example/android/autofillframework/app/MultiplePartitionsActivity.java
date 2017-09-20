@@ -23,21 +23,20 @@ import android.view.View;
 import android.view.autofill.AutofillManager;
 import android.widget.Toast;
 
+import com.example.android.autofillframework.CommonUtil;
 import com.example.android.autofillframework.R;
 
 /**
  * Activity used to demonstrated safe partitioning of data.
- *
+ * <p>
  * <p>It has multiple partitions, but only accepts autofill on each partition at time.
  */
 /*
  * TODO list
  *
  * - Fix top margin.
- * - Use a combo box to select which partition is visible (will require changes on CustomView to
- *   hide a partition).
+ * - Use a combo box to select if credit card expiration date is expressed as date or text.
  * - Use a dedicated TextView (instead of Toast) for error messages.
- * - Resize line height based on number of lines on screen.
  * - Use wrap_context to CustomView container.
  * - Use different background color (or borders) for each partition.
  * - Add more partitions (like address) - should match same partitions from service.
@@ -64,30 +63,49 @@ public class MultiplePartitionsActivity extends AppCompatActivity {
 
         mCustomVirtualView = findViewById(R.id.custom_view);
 
+
         mCredentialsPartition =
                 mCustomVirtualView.addPartition(getString(R.string.partition_credentials));
-        mCredentialsPartition.addLine("username", getString(R.string.username_label),
+        mCredentialsPartition.addLine("username", View.AUTOFILL_TYPE_TEXT,
+                getString(R.string.username_label),
                 "         ", false, View.AUTOFILL_HINT_USERNAME);
-        mCredentialsPartition.addLine("password", getString(R.string.password_label),
+        mCredentialsPartition.addLine("password", View.AUTOFILL_TYPE_TEXT,
+                getString(R.string.password_label),
                 "         ", true, View.AUTOFILL_HINT_PASSWORD);
 
-        mCcPartition = mCustomVirtualView.addPartition(getString(R.string.partition_credit_card));
-        mCcPartition.addLine("ccNumber", getString(R.string.credit_card_number_label),
-                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_NUMBER);
-        mCcPartition.addLine("ccDay", getString(R.string.credit_card_expiration_day_label),
-                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY);
-        mCcPartition.addLine("ccMonth", getString(R.string.credit_card_expiration_month_label),
-                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH);
-        mCcPartition.addLine("ccYear", getString(R.string.credit_card_expiration_year_label),
-                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR);
-        // TODO: figure out why expiration date is not being autofilled
-        mCcPartition.addLine("ccDate", getString(R.string.credit_card_expiration_date_label),
-                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE);
-        mCcPartition.addLine("ccSecurityCode", getString(R.string.credit_card_security_code_label),
-                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE);
+        int ccExpirationType = View.AUTOFILL_TYPE_DATE;
+        // TODO: add a checkbox to switch between text / date instead
+        Intent intent = getIntent();
+        if (intent != null) {
+            int newType = intent.getIntExtra("dateType", -1);
+            if (newType != -1) {
+                ccExpirationType = newType;
+                String typeMessage = getString(R.string.message_credit_card_expiration_type,
+                        CommonUtil.getTypeAsString(ccExpirationType));
+                // TODO: display type in a header or proper status widget
+                Toast.makeText(getApplicationContext(), typeMessage, Toast.LENGTH_LONG).show();
+            }
+        }
 
-        // TODO: add ComboBox that changes visibility of partitions
-        // mCcPartition.setVisibility(false);
+        mCcPartition = mCustomVirtualView.addPartition(getString(R.string.partition_credit_card));
+        mCcPartition.addLine("ccNumber", View.AUTOFILL_TYPE_TEXT,
+                getString(R.string.credit_card_number_label),
+                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_NUMBER);
+        mCcPartition.addLine("ccDay", View.AUTOFILL_TYPE_TEXT,
+                getString(R.string.credit_card_expiration_day_label),
+                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY);
+        mCcPartition.addLine("ccMonth", ccExpirationType,
+                getString(R.string.credit_card_expiration_month_label),
+                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH);
+        mCcPartition.addLine("ccYear", View.AUTOFILL_TYPE_TEXT,
+                getString(R.string.credit_card_expiration_year_label),
+                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR);
+        mCcPartition.addLine("ccDate", ccExpirationType,
+                getString(R.string.credit_card_expiration_date_label),
+                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DATE);
+        mCcPartition.addLine("ccSecurityCode", View.AUTOFILL_TYPE_TEXT,
+                getString(R.string.credit_card_security_code_label),
+                "         ", true, View.AUTOFILL_HINT_CREDIT_CARD_SECURITY_CODE);
 
         findViewById(R.id.clear).setOnClickListener(new View.OnClickListener() {
             @Override
