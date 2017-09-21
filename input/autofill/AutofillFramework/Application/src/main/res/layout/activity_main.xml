@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -76,19 +77,19 @@
             android:id="@+id/creditCardCompoundViewButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:infoText="@string/compound_view_credit_card_info"
-            app:labelText="@string/navigation_button_compound_view_credit_card_label"
             app:imageColor="@android:color/holo_blue_light"
-            app:itemLogo="@drawable/ic_view_module_black_24dp" />
+            app:infoText="@string/compound_view_credit_card_info"
+            app:itemLogo="@drawable/ic_view_module_black_24dp"
+            app:labelText="@string/navigation_button_compound_view_credit_card_label" />
 
         <com.example.android.autofillframework.app.NavigationItem
             android:id="@+id/creditCardDatePickerButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:infoText="@string/date_picker_credit_card_info"
-            app:labelText="@string/navigation_button_date_picker_credit_card_label"
             app:imageColor="@android:color/holo_blue_light"
-            app:itemLogo="@drawable/ic_view_module_black_24dp" />
+            app:infoText="@string/date_picker_credit_card_info"
+            app:itemLogo="@drawable/ic_view_module_black_24dp"
+            app:labelText="@string/navigation_button_date_picker_credit_card_label" />
 
         <com.example.android.autofillframework.app.NavigationItem
             android:id="@+id/emailComposeButton"
@@ -103,10 +104,10 @@
             android:id="@+id/multiplePartitionsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:imageColor="@android:color/holo_green_dark"
             app:infoText="@string/multiple_partitions"
-            app:labelText="@string/navigation_button_multiple_partitions_label"
             app:itemLogo="@drawable/ic_custom_virtual_logo_24dp"
-            app:imageColor="@android:color/holo_green_dark"/>
+            app:labelText="@string/navigation_button_multiple_partitions_label" />
 
         <com.example.android.autofillframework.app.NavigationItem
             android:id="@+id/creditCardButton"

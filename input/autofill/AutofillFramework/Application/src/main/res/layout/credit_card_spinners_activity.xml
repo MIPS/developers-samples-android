@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 -->
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,30 +25,30 @@
     android:paddingTop="@dimen/activity_vertical_margin">
 
     <TextView
-        android:id="@+id/spinners_credit_card_header"
+        android:id="@+id/creditCardHeader"
         style="@style/TextAppearance.AppCompat.Large"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
         android:text="@string/navigation_button_spinners_credit_card_label"
-        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/infoButton"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.example.android.autofillframework.app.InfoButton
-        android:id="@+id/imageButton"
+        android:id="@+id/infoButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/ic_info_black_24dp"
-        app:layout_constraintBottom_toBottomOf="@+id/spinners_credit_card_header"
+        app:dialogText="@string/spinners_credit_card_info"
+        app:layout_constraintBottom_toBottomOf="@+id/creditCardHeader"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/spinners_credit_card_header"
-        app:layout_constraintTop_toTopOf="@+id/spinners_credit_card_header"
-        app:dialogText="@string/spinners_credit_card_info" />
+        app:layout_constraintStart_toEndOf="@+id/creditCardHeader"
+        app:layout_constraintTop_toTopOf="@+id/creditCardHeader" />
 
     <TextView
         android:id="@+id/creditCardNumberLabel"
@@ -57,20 +58,20 @@
         android:importantForAutofill="no"
         android:labelFor="@+id/creditCardNumberField"
         android:text="@string/credit_card_number_label"
-        app:layout_constraintStart_toStartOf="@+id/creditCardExpirationLabel"
-        app:layout_constraintTop_toBottomOf="@+id/spinners_credit_card_header" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/creditCardHeader" />
 
     <EditText
         android:id="@+id/creditCardNumberField"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/creditCardNumberLabel"
-        android:layout_marginEnd="8dp"
         android:autofillHints="creditCardNumber"
+        android:ems="10"
         android:focusedByDefault="true"
         android:inputType="number"
         app:layout_constraintBottom_toBottomOf="@+id/creditCardNumberLabel"
-        app:layout_constraintEnd_toEndOf="@+id/expirationYear"
+        app:layout_constraintLeft_toRightOf="@+id/creditCardExpirationLabel"
         app:layout_constraintStart_toStartOf="@+id/expirationDay"
         app:layout_constraintTop_toTopOf="@+id/creditCardNumberLabel" />
 
@@ -81,7 +82,6 @@
         android:layout_marginTop="@dimen/spacing_large"
         android:importantForAutofill="no"
         android:text="@string/credit_card_expiration_label"
-        app:layout_constraintEnd_toStartOf="@+id/expirationDay"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/creditCardNumberLabel" />
 
@@ -93,7 +93,7 @@
         android:autofillHints="creditCardExpirationDay"
         app:layout_constraintBottom_toBottomOf="@+id/creditCardExpirationLabel"
         app:layout_constraintEnd_toStartOf="@+id/expirationMonth"
-        app:layout_constraintStart_toEndOf="@+id/creditCardNumberLabel"
+        app:layout_constraintStart_toEndOf="@+id/creditCardExpirationLabel"
         app:layout_constraintTop_toTopOf="@+id/creditCardExpirationLabel" />
 
     <Spinner
@@ -124,8 +124,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_large"
         android:importantForAutofill="no"
-        android:text="@string/credit_card_security_code_label"
-        app:layout_constraintEnd_toStartOf="@+id/creditCardExpirationView"
+        android:labelFor="@+id/creditCardSecurityCode"
+        android:text="@string/credit_card_security_code_abbrev_label"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/creditCardExpirationLabel" />
 
@@ -134,11 +134,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/creditCardSecurityCodeLabel"
-        android:layout_marginEnd="8dp"
-        android:inputType="number"
         android:autofillHints="creditCardSecurityCode"
+        android:ems="6"
+        android:inputType="number"
         app:layout_constraintBottom_toBottomOf="@+id/creditCardSecurityCodeLabel"
-        app:layout_constraintEnd_toEndOf="@+id/expirationMonth"
         app:layout_constraintStart_toStartOf="@+id/expirationDay"
         app:layout_constraintTop_toTopOf="@+id/creditCardSecurityCodeLabel" />
 

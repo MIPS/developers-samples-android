@@ -61,7 +61,6 @@ public class CreditCardDatePickerActivity extends AppCompatActivity {
             }
         });
 
-        // TODO: fix out style to display as an EditText?
         mCcExpDateView.reset();
     }
 

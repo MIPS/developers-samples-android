@@ -23,6 +23,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.AppCompatEditText;
+import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +35,7 @@ import android.widget.EditText;
 import com.example.android.autofillframework.R;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import static com.example.android.autofillframework.CommonUtil.DEBUG;
 import static com.example.android.autofillframework.CommonUtil.TAG;
@@ -42,7 +45,7 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
  * a non-editable {@link EditText} that triggers a {@link DatePickerDialog} to represent the
  * credit card expiration month and year.
  */
-public class CreditCardExpirationDatePickerView extends EditText {
+public class CreditCardExpirationDatePickerView extends AppCompatEditText {
 
     private static final int CC_EXP_YEARS_COUNT = 5;
 
@@ -65,13 +68,7 @@ public class CreditCardExpirationDatePickerView extends EditText {
 
     public CreditCardExpirationDatePickerView(@NonNull Context context,
             @Nullable AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
-    }
-
-    public CreditCardExpirationDatePickerView(@NonNull final Context context,
-            @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-
+        super(context, attrs, defStyleAttr);
         // Use the current date as the initial date in the picker.
         mTempCalendar = Calendar.getInstance();
         mYear = mTempCalendar.get(Calendar.YEAR);
@@ -85,6 +82,7 @@ public class CreditCardExpirationDatePickerView extends EditText {
         mTempCalendar.clear();
         mTempCalendar.set(Calendar.YEAR, mYear);
         mTempCalendar.set(Calendar.MONTH, mMonth);
+        mTempCalendar.set(Calendar.DATE, 1);
         return mTempCalendar;
     }
 
@@ -113,10 +111,9 @@ public class CreditCardExpirationDatePickerView extends EditText {
     private void setDate(int year, int month) {
         mYear = year;
         mMonth = month;
-        // TODO: use i18n / DateFormatter
-        String text = String.format("%2d/%d", mMonth + 1, mYear);
-        if (DEBUG) Log.d(TAG, "Formatted date: " + text);
-        setText(text);
+        Date selectedDate = new Date(getCalendar().getTimeInMillis());
+        String dateString = DateFormat.getDateFormat(getContext()).format(selectedDate);
+        setText(dateString);
     }
 
     @Override
@@ -126,10 +123,7 @@ public class CreditCardExpirationDatePickerView extends EditText {
 
     public void reset() {
         mTempCalendar.setTimeInMillis(System.currentTimeMillis());
-        mYear = mTempCalendar.get(Calendar.YEAR);
-        mMonth = mTempCalendar.get(Calendar.MONTH);
-        // TODO: use i18n / DateFormatter
-        setText("MM/YYYY");
+        setDate(mTempCalendar.get(Calendar.YEAR), mTempCalendar.get(Calendar.MONTH));
     }
 
     public void showDatePickerDialog(FragmentManager fragmentManager) {
@@ -146,7 +140,7 @@ public class CreditCardExpirationDatePickerView extends EditText {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             DatePickerDialog dialog = new DatePickerDialog(getActivity(),
-                    R.style.CustomDatePickerDialogTheme, this, mParent.mYear, mParent.mMonth, 0);
+                    R.style.CustomDatePickerDialogTheme, this, mParent.mYear, mParent.mMonth, 1);
 
             DatePicker datePicker = dialog.getDatePicker();
 

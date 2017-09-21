@@ -37,12 +37,13 @@
         trigger AutoComplete dialogs when focused</string>
     <string name="autofill_sign_in_prompt">Tap to sign in.</string>
     <string name="credit_card_number_label">CC Number</string>
-    <string name="credit_card_expiration_label">CC Exp</string>
+    <string name="credit_card_expiration_label">CC Expiration</string>
     <string name="credit_card_expiration_date_label">CC Exp Date</string>
     <string name="credit_card_expiration_day_label">CC Exp Day</string>
     <string name="credit_card_expiration_month_label">CC Exp Month</string>
     <string name="credit_card_expiration_year_label">CC Exp Year</string>
     <string name="credit_card_security_code_label">CC Security Code</string>
+    <string name="credit_card_security_code_abbrev_label">CSC</string>
     <string name="settings_cancel">Cancel</string>
     <string name="settings_save">Save</string>
     <string name="settings_authenticate_responses">Authenticate responses</string>

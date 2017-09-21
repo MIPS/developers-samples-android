@@ -16,11 +16,13 @@
 package com.example.android.autofillframework.app;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -38,6 +40,7 @@ import android.widget.Toast;
 
 import com.example.android.autofillframework.CommonUtil;
 import com.example.android.autofillframework.R;
+import com.google.common.base.Preconditions;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -54,11 +57,8 @@ public class CustomVirtualView extends View {
     protected static final boolean DEBUG = true;
     protected static final boolean VERBOSE = false;
     private static final String TAG = "CustomView";
-    private static final int TOP_MARGIN = 100;
-    private static final int LEFT_MARGIN = 100;
-    private static final int TEXT_HEIGHT = 70;
+    private static final int DEFAULT_TEXT_HEIGHT_DP = 34;
     private static final int VERTICAL_GAP = 10;
-    private static final int LINE_HEIGHT = TEXT_HEIGHT + VERTICAL_GAP;
     private static final int UNFOCUSED_COLOR = Color.BLACK;
     private static final int FOCUSED_COLOR = Color.RED;
     private static int sNextId;
@@ -72,26 +72,41 @@ public class CustomVirtualView extends View {
     protected int mLeftMargin;
     private Paint mTextPaint;
     private int mTextHeight;
-    private int mVerticalGap;
     private int mLineLength;
 
+    public CustomVirtualView(Context context) {
+        this(context, null);
+    }
+
     public CustomVirtualView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
+    }
+
+    public CustomVirtualView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, 0);
+    }
+
+    public CustomVirtualView(Context context, @Nullable AttributeSet attrs, int defStyleAttr,
+            int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
         mAutofillManager = context.getSystemService(AutofillManager.class);
         mTextPaint = new Paint();
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomVirtualView,
+                defStyleAttr, defStyleRes);
+        int defaultHeight =
+                (int) (DEFAULT_TEXT_HEIGHT_DP * getResources().getDisplayMetrics().density);
+        mTextHeight = typedArray.getDimensionPixelSize(
+                R.styleable.CustomVirtualView_internalTextSize, defaultHeight);
+        typedArray.recycle();
         resetCoordinates();
     }
 
     protected void resetCoordinates() {
-        // TODO: read values below from attrs instead of constants
-        // felipeal: inline those not changed
         mTextPaint.setStyle(Style.FILL);
-        mTextPaint.setTextSize(TEXT_HEIGHT);
-        mTopMargin = TOP_MARGIN;
-        mLeftMargin = LEFT_MARGIN;
-        mTextHeight = TEXT_HEIGHT;
-        mVerticalGap = VERTICAL_GAP;
-        mLineLength = mTextHeight + mVerticalGap;
+        mTextPaint.setTextSize(mTextHeight);
+        mTopMargin = getPaddingTop();
+        mLeftMargin = getPaddingStart();
+        mLineLength = mTextHeight + VERTICAL_GAP;
     }
 
     @Override
@@ -220,11 +235,11 @@ public class CustomVirtualView extends View {
             // ...then paints the edit text and sets the proper boundary
             float deltaX = mTextPaint.measureText(readOnlyText);
             x += deltaX;
-            line.mBounds.set((int) x, (int) (y - LINE_HEIGHT),
+            line.mBounds.set((int) x, (int) (y - mLineLength),
                     (int) (x + mTextPaint.measureText(writeText)), (int) y);
             if (VERBOSE) Log.v(TAG, "setBounds(" + x + ", " + y + "): " + line.mBounds);
             canvas.drawText(writeText, x, y, mTextPaint);
-            y += LINE_HEIGHT;
+            y += mLineLength;
         }
     }
 
@@ -271,13 +286,9 @@ public class CustomVirtualView extends View {
      * @throws IllegalArgumentException if such partition already exists.
      */
     public Partition addPartition(String name) {
-        // TODO: use PreConditions
-        if (name == null) {
-            throw new IllegalArgumentException("name cannot be null");
-        }
-        if (mPartitionsByName.containsKey(name)) {
-            throw new IllegalArgumentException("partition with such name already exists");
-        }
+        Preconditions.checkNotNull(name, "Name cannot be null.");
+        Preconditions.checkArgument(mPartitionsByName.containsKey(name),
+                "Partition with such name already exists.");
         Partition partition = new Partition(name);
         mPartitionsByName.put(name, partition);
         return partition;

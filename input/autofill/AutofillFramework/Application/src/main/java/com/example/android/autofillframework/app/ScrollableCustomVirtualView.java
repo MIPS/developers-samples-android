@@ -16,6 +16,7 @@
 package com.example.android.autofillframework.app;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -27,12 +28,27 @@ import android.view.MotionEvent;
 public class ScrollableCustomVirtualView extends CustomVirtualView
         implements GestureDetector.OnGestureListener {
 
-    private static final String TAG = "ScrollableCustomVirtualView";
+    private static final String TAG = "ScrollableCustomView";
 
     private GestureDetector mGestureDetector;
 
+    public ScrollableCustomVirtualView(Context context) {
+        this(context, null);
+    }
+
     public ScrollableCustomVirtualView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
+
+    }
+
+    public ScrollableCustomVirtualView(Context context, @Nullable AttributeSet attrs,
+            int defStyleAttr) {
+        this(context, attrs, defStyleAttr, 0);
+    }
+
+    public ScrollableCustomVirtualView(Context context, @Nullable AttributeSet attrs,
+            int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
         mGestureDetector = new GestureDetector(context, this);
     }
 
