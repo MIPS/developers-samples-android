@@ -143,7 +143,7 @@ public final class FilledAutofillFieldCollection {
 
 
             if (AutofillHints.isValidHint(hint)) {
-                mHintMap.put(AutofillHints.getStoredHintName(hint), filledAutofillField);
+                mHintMap.put(hint, filledAutofillField);
             } else {
                 Log.e(TAG, "Invalid hint: " + autofillHints[i]);
             }
@@ -153,7 +153,6 @@ public final class FilledAutofillFieldCollection {
     /**
      * Populates a {@link Dataset.Builder} with appropriate values for each {@link AutofillId}
      * in a {@code AutofillFieldMetadataCollection}.
-     * <p>
      *
      * In other words, it constructs an autofill
      * {@link Dataset.Builder} by applying saved values (from this {@code FilledAutofillFieldCollection})
@@ -219,9 +218,9 @@ public final class FilledAutofillFieldCollection {
     }
 
     /**
-     * Takes in a list of autofill hints (`autofillHints`), usually associated with a View or set of
+     * Takes in a list of autofill hints (autofillHints), usually associated with a View or set of
      * Views. Returns whether any of the filled fields on the page have at least 1 of these
-     * `autofillHint`s.
+     * autofillHints.
      */
     public boolean helpsWithHints(List<String> autofillHints) {
         for (int i = 0; i < autofillHints.size(); i++) {

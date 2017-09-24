@@ -110,22 +110,4 @@ public final class AutofillHelper {
             return null;
         }
     }
-
-    public static String[] filterForSupportedHints(String[] hints) {
-        String[] filteredHints = new String[hints.length];
-        int i = 0;
-        for (String hint : hints) {
-            if (AutofillHints.isValidHint(hint)) {
-                filteredHints[i++] = hint;
-            } else {
-                Log.d(TAG, "Invalid autofill hint: " + hint);
-            }
-        }
-        if (i == 0) {
-            return null;
-        }
-        String[] finalFilteredHints = new String[i];
-        System.arraycopy(filteredHints, 0, finalFilteredHints, 0, i);
-        return finalFilteredHints;
-    }
 }

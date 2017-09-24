@@ -64,24 +64,29 @@ final class StructureParser {
     }
 
     private void parseLocked(boolean forFill, ViewNode viewNode) {
-        if (viewNode.getAutofillHints() != null && viewNode.getAutofillHints().length > 0) {
-            if (forFill) {
-                mAutofillFields.add(new AutofillFieldMetadata(viewNode));
-            } else {
-                FilledAutofillField filledAutofillField =
-                        new FilledAutofillField(viewNode.getAutofillHints());
-                AutofillValue autofillValue = viewNode.getAutofillValue();
-                if (autofillValue.isText()) {
-                    // Using toString of AutofillValue.getTextValue in order to save it to
-                    // SharedPreferences.
-                    filledAutofillField.setTextValue(autofillValue.getTextValue().toString());
-                } else if (autofillValue.isDate()) {
-                    filledAutofillField.setDateValue(autofillValue.getDateValue());
-                } else if (autofillValue.isList()) {
-                    filledAutofillField.setListValue(viewNode.getAutofillOptions(),
-                            autofillValue.getListValue());
+
+        if (viewNode.getAutofillHints() != null) {
+            String[] filteredHints = AutofillHints.filterForSupportedHints(
+                    viewNode.getAutofillHints());
+            if (filteredHints != null && filteredHints.length > 0) {
+                if (forFill) {
+                    mAutofillFields.add(new AutofillFieldMetadata(viewNode));
+                } else {
+                    FilledAutofillField filledAutofillField =
+                            new FilledAutofillField(viewNode.getAutofillHints());
+                    AutofillValue autofillValue = viewNode.getAutofillValue();
+                    if (autofillValue.isText()) {
+                        // Using toString of AutofillValue.getTextValue in order to save it to
+                        // SharedPreferences.
+                        filledAutofillField.setTextValue(autofillValue.getTextValue().toString());
+                    } else if (autofillValue.isDate()) {
+                        filledAutofillField.setDateValue(autofillValue.getDateValue());
+                    } else if (autofillValue.isList()) {
+                        filledAutofillField.setListValue(viewNode.getAutofillOptions(),
+                                autofillValue.getListValue());
+                    }
+                    mFilledAutofillFieldCollection.add(filledAutofillField);
                 }
-                mFilledAutofillFieldCollection.add(filledAutofillField);
             }
         }
         int childrenSize = viewNode.getChildCount();

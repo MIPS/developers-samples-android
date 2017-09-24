@@ -64,14 +64,24 @@ public class CreditCardSpinnersActivity extends AppCompatActivity {
         // Apply the adapter to the spinner
         mCcExpirationDaySpinner.setAdapter(dayAdapter);
 
-        ArrayAdapter<CharSequence> monthAdapter = ArrayAdapter.createFromResource
-                (this, R.array.month_array, android.R.layout.simple_spinner_item);
+        /*
+        R.array.month_array could be an array of Strings like "Jan", "Feb", "March", etc., and
+        the AutofillService would know how to autofill it. However, for the sake of keeping the
+        AutofillService simple, we will stick to a list of numbers (1, 2, ... 12) to represent
+        months; it makes it much easier to generate fake autofill data in the service that can still
+        autofill this spinner.
+        */
+        ArrayAdapter<CharSequence> monthAdapter = ArrayAdapter.createFromResource(
+                this, R.array.month_array, android.R.layout.simple_spinner_item);
+        // Adapter created from resource has getAutofillOptions() implemented by default.
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mCcExpirationMonthSpinner.setAdapter(monthAdapter);
+
         int year = Calendar.getInstance().get(Calendar.YEAR);
         for (int i = 0; i < years.length; i++) {
             years[i] = Integer.toString(year + i);
         }
+        // Since the years Spinner uses a custom adapter, it needs to implement getAutofillOptions.
         mCcExpirationYearSpinner.setAdapter(
                 new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, years) {
                     @Override

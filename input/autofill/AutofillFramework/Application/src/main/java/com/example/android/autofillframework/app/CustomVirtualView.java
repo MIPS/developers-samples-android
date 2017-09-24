@@ -287,7 +287,7 @@ public class CustomVirtualView extends View {
      */
     public Partition addPartition(String name) {
         Preconditions.checkNotNull(name, "Name cannot be null.");
-        Preconditions.checkArgument(mPartitionsByName.containsKey(name),
+        Preconditions.checkArgument(!mPartitionsByName.containsKey(name),
                 "Partition with such name already exists.");
         Partition partition = new Partition(name);
         mPartitionsByName.put(name, partition);
@@ -339,7 +339,7 @@ public class CustomVirtualView extends View {
         @Override
         public String toString() {
             return id + "/" + idEntry + ": "
-                    + (type == AUTOFILL_TYPE_DATE ? date : text) // TODO: use DateFormater for date
+                    + (type == AUTOFILL_TYPE_DATE ? date : text) // TODO: use DateFormat for date
                     + " (" + CommonUtil.getTypeAsString(type) + ")"
                     + (editable ? " (editable)" : " (read-only)"
                     + (sanitized ? " (sanitized)" : " (sensitive"))
@@ -389,11 +389,8 @@ public class CustomVirtualView extends View {
          */
         public Line addLine(String idEntryPrefix, int autofillType, String label, String text,
                 boolean sensitive, String... autofillHints) {
-            // TODO: use PreConditions
-            if (autofillType != AUTOFILL_TYPE_TEXT && autofillType != AUTOFILL_TYPE_DATE) {
-                throw new IllegalArgumentException("unsupported type: " + autofillType);
-            }
-
+            Preconditions.checkArgument(autofillType == AUTOFILL_TYPE_TEXT ||
+                    autofillType == AUTOFILL_TYPE_DATE, "Unsupported type: " + autofillType);
             Line line = new Line(idEntryPrefix, autofillType, label, autofillHints, text,
                     !sensitive);
             mVirtualViewGroups.add(line);

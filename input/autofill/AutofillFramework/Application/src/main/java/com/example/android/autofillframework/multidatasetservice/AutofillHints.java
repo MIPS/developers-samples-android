@@ -16,6 +16,7 @@
 package com.example.android.autofillframework.multidatasetservice;
 
 import android.service.autofill.SaveInfo;
+import android.util.Log;
 import android.view.View;
 
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillField;
@@ -23,6 +24,8 @@ import com.example.android.autofillframework.multidatasetservice.model.FilledAut
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Calendar;
+
+import static com.example.android.autofillframework.CommonUtil.TAG;
 
 public final class AutofillHints {
     public static final int PARTITION_OTHER = 0;
@@ -136,14 +139,19 @@ public final class AutofillHints {
                                     View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH,
                                     SaveInfo.SAVE_DATA_TYPE_CREDIT_CARD, PARTITION_CREDIT_CARD,
                                     (seed) -> {
+                                        CharSequence[] months = monthRange();
+                                        int month = seed % months.length;
+                                        Calendar calendar = Calendar.getInstance();
+                                        calendar.set(Calendar.MONTH, month);
                                         FilledAutofillField filledAutofillField =
                                                 new FilledAutofillField(
                                                         View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_MONTH);
-                                        CharSequence[] months = monthRange();
-                                        filledAutofillField.setListValue(months,
-                                                seed % months.length);
+                                        filledAutofillField.setListValue(months, month);
+                                        filledAutofillField.setTextValue(Integer.toString(month));
+                                        filledAutofillField.setDateValue(calendar.getTimeInMillis());
                                         return filledAutofillField;
-                                    }, View.AUTOFILL_TYPE_TEXT, View.AUTOFILL_TYPE_LIST))
+                                    }, View.AUTOFILL_TYPE_TEXT, View.AUTOFILL_TYPE_LIST,
+                                    View.AUTOFILL_TYPE_DATE))
                     .put(View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR, new AutofillHintProperties(
                             View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_YEAR,
                             SaveInfo.SAVE_DATA_TYPE_CREDIT_CARD, PARTITION_CREDIT_CARD,
@@ -154,7 +162,7 @@ public final class AutofillHints {
                                 int expYear = calendar.get(Calendar.YEAR) + seed;
                                 calendar.set(Calendar.YEAR, expYear);
                                 filledAutofillField.setDateValue(calendar.getTimeInMillis());
-                                filledAutofillField.setTextValue("" + expYear);
+                                filledAutofillField.setTextValue(Integer.toString(expYear));
                                 return filledAutofillField;
                             }, View.AUTOFILL_TYPE_TEXT, View.AUTOFILL_TYPE_LIST,
                             View.AUTOFILL_TYPE_DATE))
@@ -162,12 +170,18 @@ public final class AutofillHints {
                             View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY,
                             SaveInfo.SAVE_DATA_TYPE_CREDIT_CARD, PARTITION_CREDIT_CARD,
                             (seed) -> {
+                                CharSequence[] days = dayRange();
+                                int day = seed % days.length;
                                 FilledAutofillField filledAutofillField = new FilledAutofillField(
                                         View.AUTOFILL_HINT_CREDIT_CARD_EXPIRATION_DAY);
-                                CharSequence[] days = dayRange();
-                                filledAutofillField.setListValue(days, seed % days.length);
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.set(Calendar.DATE, day);
+                                filledAutofillField.setListValue(days, day);
+                                filledAutofillField.setTextValue(Integer.toString(day));
+                                filledAutofillField.setDateValue(calendar.getTimeInMillis());
                                 return filledAutofillField;
-                            }, View.AUTOFILL_TYPE_TEXT, View.AUTOFILL_TYPE_LIST))
+                            }, View.AUTOFILL_TYPE_TEXT, View.AUTOFILL_TYPE_LIST,
+                            View.AUTOFILL_TYPE_DATE))
                     .put(W3cHints.HONORIFIC_PREFIX, new AutofillHintProperties(
                             W3cHints.HONORIFIC_PREFIX, SaveInfo.SAVE_DATA_TYPE_GENERIC,
                             PARTITION_OTHER,
@@ -714,8 +728,14 @@ public final class AutofillHints {
         return filledAutofillFieldCollection;
     }
 
-    public static String getStoredHintName(String hint) {
+    private static String getStoredHintName(String hint) {
         return sValidHints.get(hint).getAutofillHint();
+    }
+
+    public static void convertToStoredHintNames(String[] hints) {
+        for (int i = 0; i < hints.length; i++) {
+            hints[i] = getStoredHintName(hints[i]);
+        }
     }
 
     private static CharSequence[] dayRange() {
@@ -732,5 +752,23 @@ public final class AutofillHints {
             months[i] = Integer.toString(i);
         }
         return months;
+    }
+
+    public static String[] filterForSupportedHints(String[] hints) {
+        String[] filteredHints = new String[hints.length];
+        int i = 0;
+        for (String hint : hints) {
+            if (AutofillHints.isValidHint(hint)) {
+                filteredHints[i++] = hint;
+            } else {
+                Log.d(TAG, "Invalid autofill hint: " + hint);
+            }
+        }
+        if (i == 0) {
+            return null;
+        }
+        String[] finalFilteredHints = new String[i];
+        System.arraycopy(filteredHints, 0, finalFilteredHints, 0, i);
+        return finalFilteredHints;
     }
 }

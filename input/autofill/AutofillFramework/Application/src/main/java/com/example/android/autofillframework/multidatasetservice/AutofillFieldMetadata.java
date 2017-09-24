@@ -18,6 +18,9 @@ package com.example.android.autofillframework.multidatasetservice;
 import android.app.assist.AssistStructure.ViewNode;
 import android.view.autofill.AutofillId;
 
+import static com.example.android.autofillframework.multidatasetservice.AutofillHints.convertToStoredHintNames;
+import static com.example.android.autofillframework.multidatasetservice.AutofillHints.filterForSupportedHints;
+
 /**
  * A stripped down version of a {@link ViewNode} that contains only autofill-relevant metadata. It
  * also contains a {@code mSaveType} flag that is calculated based on the {@link ViewNode}]'s
@@ -36,7 +39,11 @@ public class AutofillFieldMetadata {
         mAutofillType = view.getAutofillType();
         mAutofillOptions = view.getAutofillOptions();
         mFocused = view.isFocused();
-        setHints(AutofillHelper.filterForSupportedHints(view.getAutofillHints()));
+        String[] hints = filterForSupportedHints(view.getAutofillHints());
+        if (hints != null) {
+            convertToStoredHintNames(hints);
+            setHints(hints);
+        }
     }
 
     public String[] getHints() {

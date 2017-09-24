@@ -104,12 +104,10 @@ public final class CommonUtil {
 
     private static void dumpNode(String prefix, ViewNode node) {
         StringBuilder builder = new StringBuilder();
-        String[] hints = node.getAutofillHints();
         builder.append(prefix)
                 .append("autoFillId: ").append(node.getAutofillId())
                 .append("\tidEntry: ").append(node.getIdEntry())
                 .append("\tid: ").append(node.getId())
-                .append("\thints: ").append(hints == null ? "N/A" : Arrays.toString(hints))
                 .append("\tclassName: ").append(node.getClassName())
                 .append('\n');
 
@@ -117,7 +115,8 @@ public final class CommonUtil {
                 .append("focused: ").append(node.isFocused())
                 .append("\tvisibility").append(node.getVisibility())
                 .append("\tchecked: ").append(node.isChecked())
-                .append("\tURL: ").append(node.getWebDomain())
+                .append("\twebDomain: ").append(node.getWebDomain())
+                .append("\thint: ").append(node.getHint())
                 .append('\n');
 
         HtmlInfo htmlInfo = node.getHtmlInfo();
@@ -129,11 +128,13 @@ public final class CommonUtil {
                     .append('\n');
         }
 
+        String[] afHints = node.getAutofillHints();
         CharSequence[] options = node.getAutofillOptions();
         builder.append(prefix).append("afType: ").append(getTypeAsString(node.getAutofillType()))
                 .append("\tafValue:")
                 .append(getAutofillValueAndTypeAsString(node.getAutofillValue()))
                 .append("\tafOptions:").append(options == null ? "N/A" : Arrays.toString(options))
+                .append("\tafHints: ").append(afHints == null ? "N/A" : Arrays.toString(afHints))
                 .append("\tinputType:").append(node.getInputType())
                 .append('\n');
 

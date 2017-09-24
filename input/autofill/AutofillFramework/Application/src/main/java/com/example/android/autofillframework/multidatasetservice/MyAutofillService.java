@@ -93,8 +93,8 @@ public class MyAutofillService extends AutofillService {
         } else {
             boolean datasetAuth = MyPreferences.getInstance(this).isDatasetAuth();
             HashMap<String, FilledAutofillFieldCollection> clientFormDataMap =
-                    SharedPrefsAutofillRepository.getInstance().getFilledAutofillFieldCollection
-                            (this, autofillFields.getFocusedHints(), autofillFields.getAllHints());
+                    SharedPrefsAutofillRepository.getInstance().getFilledAutofillFieldCollection(
+                            this, autofillFields.getFocusedHints(), autofillFields.getAllHints());
             FillResponse response = AutofillHelper.newResponse
                     (this, datasetAuth, autofillFields, clientFormDataMap);
             callback.onSuccess(response);
