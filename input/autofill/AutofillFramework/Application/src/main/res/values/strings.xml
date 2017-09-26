@@ -79,6 +79,7 @@
     <string name="cc_exp_month_description">Credit Card Expiration Month</string>
     <string name="cc_exp_year_description">Credit Card Expiration Year</string>
     <string name="invalid_package_signature">Invalid package signature</string>
+    <string name="invalid_link_association">Could not associate web domain %1$s with app %2$s</string>
     <string name="edittext_login_info">This is a sample login page that uses standard EditTexts
         from the UI toolkit. EditTexts are already optimized for autofill so extra autofill-specific
         code is almost never needed.

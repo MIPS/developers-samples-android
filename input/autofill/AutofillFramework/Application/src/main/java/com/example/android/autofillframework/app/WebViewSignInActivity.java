@@ -19,8 +19,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import static com.example.android.autofillframework.CommonUtil.DEBUG;
+import static com.example.android.autofillframework.CommonUtil.TAG;
 
 import com.example.android.autofillframework.R;
 
@@ -38,7 +43,19 @@ public class WebViewSignInActivity extends AppCompatActivity {
         setContentView(R.layout.login_webview_activity);
 
         WebView webView = findViewById(R.id.webview);
+        WebSettings webSettings = webView.getSettings();
         webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("file:///android_res/raw/sample_form.html");
+        webSettings.setJavaScriptEnabled(true);
+
+        String url = getIntent().getStringExtra("url");
+        if (url == null) {
+            url = "file:///android_res/raw/sample_form.html";
+        }
+        if (DEBUG) Log.d(TAG, "Clearing WebView data");
+        webView.clearHistory();
+        webView.clearFormData();
+        webView.clearCache(true);
+        Log.i(TAG, "Loading URL " + url);
+        webView.loadUrl(url);
     }
 }

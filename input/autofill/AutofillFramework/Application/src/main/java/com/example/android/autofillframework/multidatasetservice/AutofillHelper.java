@@ -38,6 +38,10 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
  */
 public final class AutofillHelper {
 
+    private AutofillHelper() {
+        throw new UnsupportedOperationException("provide static methods only");
+    }
+
     /**
      * Wraps autofill data in a LoginCredential  Dataset object which can then be sent back to the
      * client View.

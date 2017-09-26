@@ -28,8 +28,9 @@ import java.util.Set;
 
 /**
  * Singleton autofill data repository that stores autofill fields to SharedPreferences.
- * Disclaimer: you should not store sensitive fields like user data unencrypted. This is done
- * here only for simplicity and learning purposes.
+ *
+ * <p><b>Disclaimer</b>: you should not store sensitive fields like user data unencrypted.
+ * This is done here only for simplicity and learning purposes.
  */
 public class SharedPrefsAutofillRepository implements AutofillDataSource {
     private static final String SHARED_PREF_KEY = "com.example.android.autofillframework"

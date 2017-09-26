@@ -18,13 +18,17 @@ package com.example.android.autofillframework.multidatasetservice;
 import android.app.assist.AssistStructure;
 import android.app.assist.AssistStructure.ViewNode;
 import android.app.assist.AssistStructure.WindowNode;
+import android.content.Context;
 import android.util.Log;
 import android.view.autofill.AutofillValue;
 
+import com.example.android.autofillframework.R;
+import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsDigitalAssetLinksRepository;
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillField;
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 
 import static com.example.android.autofillframework.CommonUtil.TAG;
+import static com.example.android.autofillframework.CommonUtil.DEBUG;
 
 /**
  * Parser for an AssistStructure object. This is invoked when the Autofill Service receives an
@@ -34,10 +38,12 @@ import static com.example.android.autofillframework.CommonUtil.TAG;
 final class StructureParser {
     private final AutofillFieldMetadataCollection mAutofillFields =
             new AutofillFieldMetadataCollection();
+    private final Context mContext;
     private final AssistStructure mStructure;
     private FilledAutofillFieldCollection mFilledAutofillFieldCollection;
 
-    StructureParser(AssistStructure structure) {
+    StructureParser(Context context, AssistStructure structure) {
+        mContext = context;
         mStructure = structure;
     }
 
@@ -53,17 +59,42 @@ final class StructureParser {
      * Traverse AssistStructure and add ViewNode metadata to a flat list.
      */
     private void parse(boolean forFill) {
-        Log.d(TAG, "Parsing structure for " + mStructure.getActivityComponent());
+        if (DEBUG) Log.d(TAG, "Parsing structure for " + mStructure.getActivityComponent());
         int nodes = mStructure.getWindowNodeCount();
         mFilledAutofillFieldCollection = new FilledAutofillFieldCollection();
+        StringBuilder webDomain = new StringBuilder();
         for (int i = 0; i < nodes; i++) {
             WindowNode node = mStructure.getWindowNodeAt(i);
             ViewNode view = node.getRootViewNode();
-            parseLocked(forFill, view);
+            parseLocked(forFill, view, webDomain);
+        }
+        if (webDomain.length() > 0 ) {
+            String packageName = mStructure.getActivityComponent().getPackageName();
+            boolean valid = SharedPrefsDigitalAssetLinksRepository.getInstance().isValid(mContext,
+                    webDomain.toString(), packageName);
+            if (!valid) {
+                throw new SecurityException(mContext.getString(
+                        R.string.invalid_link_association, webDomain, packageName));
+            }
+            if (DEBUG) Log.d(TAG, "Domain " + webDomain + " is valid for " + packageName);
+        } else {
+            if (DEBUG) Log.d(TAG, "no web domain");
         }
     }
 
-    private void parseLocked(boolean forFill, ViewNode viewNode) {
+    private void parseLocked(boolean forFill, ViewNode viewNode, StringBuilder validWebDomain) {
+        String webDomain = viewNode.getWebDomain();
+        if (webDomain != null) {
+            if (DEBUG) Log.d(TAG, "child web domain: " + webDomain);
+            if (validWebDomain.length() > 0) {
+                if (!webDomain.equals(validWebDomain.toString())) {
+                    throw new SecurityException("Found multiple web domains: valid= "
+                            + validWebDomain + ", child=" + webDomain);
+                }
+            } else {
+                validWebDomain.append(webDomain);
+            }
+        }
 
         if (viewNode.getAutofillHints() != null) {
             String[] filteredHints = AutofillHints.filterForSupportedHints(
@@ -92,7 +123,7 @@ final class StructureParser {
         int childrenSize = viewNode.getChildCount();
         if (childrenSize > 0) {
             for (int i = 0; i < childrenSize; i++) {
-                parseLocked(forFill, viewNode.getChildAt(i));
+                parseLocked(forFill, viewNode.getChildAt(i), validWebDomain);
             }
         }
     }

@@ -124,7 +124,7 @@ public class AuthActivity extends AppCompatActivity {
         Intent intent = getIntent();
         boolean forResponse = intent.getBooleanExtra(EXTRA_FOR_RESPONSE, true);
         AssistStructure structure = intent.getParcelableExtra(EXTRA_ASSIST_STRUCTURE);
-        StructureParser parser = new StructureParser(structure);
+        StructureParser parser = new StructureParser(getApplicationContext(), structure);
         parser.parseForFill();
         AutofillFieldMetadataCollection autofillFields = parser.getAutofillFields();
         int saveTypes = autofillFields.getSaveType();

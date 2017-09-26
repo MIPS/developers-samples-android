@@ -29,7 +29,6 @@ import android.service.autofill.SaveRequest;
 import android.util.Log;
 import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import com.example.android.autofillframework.R;
 import com.example.android.autofillframework.multidatasetservice.datasource.SharedPrefsAutofillRepository;
@@ -41,8 +40,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.example.android.autofillframework.CommonUtil.DEBUG;
 import static com.example.android.autofillframework.CommonUtil.TAG;
+import static com.example.android.autofillframework.CommonUtil.VERBOSE;
 import static com.example.android.autofillframework.CommonUtil.bundleToString;
 import static com.example.android.autofillframework.CommonUtil.dumpStructure;
 
@@ -56,13 +55,13 @@ public class MyAutofillService extends AutofillService {
         String packageName = structure.getActivityComponent().getPackageName();
         if (!SharedPrefsPackageVerificationRepository.getInstance()
                 .putPackageSignatures(getApplicationContext(), packageName)) {
-            Toast.makeText(getApplicationContext(), R.string.invalid_package_signature,
-                    Toast.LENGTH_SHORT).show();
+            callback.onFailure(
+                    getApplicationContext().getString(R.string.invalid_package_signature));
             return;
         }
         final Bundle data = request.getClientState();
-        if (DEBUG) {
-            Log.d(TAG, "onFillRequest(): data=" + bundleToString(data));
+        if (VERBOSE) {
+            Log.v(TAG, "onFillRequest(): data=" + bundleToString(data));
             dumpStructure(structure);
         }
 
@@ -73,8 +72,17 @@ public class MyAutofillService extends AutofillService {
             }
         });
         // Parse AutoFill data in Activity
-        StructureParser parser = new StructureParser(structure);
-        parser.parseForFill();
+        StructureParser parser = new StructureParser(getApplicationContext(), structure);
+        // TODO: try / catch on other places (onSave, auth activity, etc...)
+        try {
+            parser.parseForFill();
+        } catch (SecurityException e) {
+            // TODO: handle cases where DAL didn't pass by showing a custom UI asking the user
+            // to confirm the mapping. Might require subclassing SecurityException.
+            Log.w(TAG, "Security exception handling " + request, e);
+            callback.onFailure(e.getMessage());
+            return;
+        }
         AutofillFieldMetadataCollection autofillFields = parser.getAutofillFields();
         FillResponse.Builder responseBuilder = new FillResponse.Builder();
         // Check user's settings for authenticating Responses and Datasets.
@@ -108,16 +116,16 @@ public class MyAutofillService extends AutofillService {
         String packageName = structure.getActivityComponent().getPackageName();
         if (!SharedPrefsPackageVerificationRepository.getInstance()
                 .putPackageSignatures(getApplicationContext(), packageName)) {
-            Toast.makeText(getApplicationContext(), R.string.invalid_package_signature,
-                    Toast.LENGTH_SHORT).show();
+            callback.onFailure(
+                    getApplicationContext().getString(R.string.invalid_package_signature));
             return;
         }
         final Bundle data = request.getClientState();
-        if (DEBUG) {
-            Log.d(TAG, "onSaveRequest(): data=" + bundleToString(data));
+        if (VERBOSE) {
+            Log.v(TAG, "onSaveRequest(): data=" + bundleToString(data));
             dumpStructure(structure);
         }
-        StructureParser parser = new StructureParser(structure);
+        StructureParser parser = new StructureParser(getApplicationContext(), structure);
         parser.parseForSave();
         FilledAutofillFieldCollection filledAutofillFieldCollection = parser.getClientFormData();
         SharedPrefsAutofillRepository.getInstance()
