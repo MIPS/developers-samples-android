@@ -53,7 +53,7 @@ public class SharedPrefsDigitalAssetLinksRepository implements DigitalAssetLinks
             Log.w(TAG, "error getting fingerprint for " + packageName, e);
             return false;
         }
-        return SecurityHelper.isValid(webDomain,packageName,fingerprint);
+        return SecurityHelper.isValid(webDomain, packageName, fingerprint);
     }
 
     @Override

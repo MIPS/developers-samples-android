@@ -79,7 +79,7 @@ public final class CommonUtil {
     private static String getAutofillValueAndTypeAsString(AutofillValue value) {
         if (value == null) return "null";
 
-        StringBuilder builder = new StringBuilder(value.toString()).append( '(');
+        StringBuilder builder = new StringBuilder(value.toString()).append('(');
         if (value.isText()) {
             builder.append("isText");
         } else if (value.isDate()) {

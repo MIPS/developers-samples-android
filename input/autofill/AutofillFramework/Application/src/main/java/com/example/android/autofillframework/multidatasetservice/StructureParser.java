@@ -27,8 +27,8 @@ import com.example.android.autofillframework.multidatasetservice.datasource.Shar
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillField;
 import com.example.android.autofillframework.multidatasetservice.model.FilledAutofillFieldCollection;
 
-import static com.example.android.autofillframework.CommonUtil.TAG;
 import static com.example.android.autofillframework.CommonUtil.DEBUG;
+import static com.example.android.autofillframework.CommonUtil.TAG;
 
 /**
  * Parser for an AssistStructure object. This is invoked when the Autofill Service receives an
@@ -68,7 +68,7 @@ final class StructureParser {
             ViewNode view = node.getRootViewNode();
             parseLocked(forFill, view, webDomain);
         }
-        if (webDomain.length() > 0 ) {
+        if (webDomain.length() > 0) {
             String packageName = mStructure.getActivityComponent().getPackageName();
             boolean valid = SharedPrefsDigitalAssetLinksRepository.getInstance().isValid(mContext,
                     webDomain.toString(), packageName);

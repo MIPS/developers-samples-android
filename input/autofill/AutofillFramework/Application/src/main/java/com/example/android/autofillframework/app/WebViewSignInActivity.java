@@ -24,10 +24,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.example.android.autofillframework.R;
+
 import static com.example.android.autofillframework.CommonUtil.DEBUG;
 import static com.example.android.autofillframework.CommonUtil.TAG;
-
-import com.example.android.autofillframework.R;
 
 public class WebViewSignInActivity extends AppCompatActivity {
 

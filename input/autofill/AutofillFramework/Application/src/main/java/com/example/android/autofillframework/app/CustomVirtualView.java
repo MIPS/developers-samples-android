@@ -325,7 +325,7 @@ public class CustomVirtualView extends View {
         private long date;
 
         Item(Line line, int id, String idEntry, String[] hints, int type, CharSequence text,
-                boolean editable,boolean sanitized) {
+                boolean editable, boolean sanitized) {
             this.line = line;
             this.id = id;
             this.idEntry = idEntry;
@@ -379,7 +379,7 @@ public class CustomVirtualView extends View {
          * Adds a new line (containining a label and an input field) to the view.
          *
          * @param idEntryPrefix id prefix used to identify the line - label node will be suffixed
-         * with {@code Label} and editable node with {@code Field}.
+         *                      with {@code Label} and editable node with {@code Field}.
          * @param autofillType  {@link View#getAutofillType() autofill type} of the field.
          * @param label         text used in the label.
          * @param text          initial text used in the input field.

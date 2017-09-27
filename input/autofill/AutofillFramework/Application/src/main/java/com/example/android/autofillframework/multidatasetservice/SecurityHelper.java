@@ -62,7 +62,7 @@ public final class SecurityHelper {
             String fingerprint) {
         if (DEBUG) Log.d(TAG, "validating domain " + webDomain + " for pkg " + packageName
                 + " and fingerprint " + fingerprint + " for permission" + permission);
-        if (!webDomain.startsWith("http:") && !webDomain.startsWith("https:") ) {
+        if (!webDomain.startsWith("http:") && !webDomain.startsWith("https:")) {
             // Unfortunately AssistStructure.ViewNode does not tell what the domain is, so let's
             // assume it's https
             webDomain = "https://" + webDomain;
@@ -128,9 +128,9 @@ public final class SecurityHelper {
     public static boolean isValid(String webDomain, String packageName, String fingerprint) {
         String canonicalDomain = getCanonicalDomain(webDomain);
         if (DEBUG) Log.d(TAG, "validating domain " + canonicalDomain + " (" + webDomain
-                + ") for pkg " + packageName + " and fingerprint " + fingerprint );
+                + ") for pkg " + packageName + " and fingerprint " + fingerprint);
         final String fullDomain;
-        if (!webDomain.startsWith("http:") && !webDomain.startsWith("https:") ) {
+        if (!webDomain.startsWith("http:") && !webDomain.startsWith("https:")) {
             // Unfortunately AssistStructure.ViewNode does not tell what the domain is, so let's
             // assume it's https
             fullDomain = "https://" + canonicalDomain;
