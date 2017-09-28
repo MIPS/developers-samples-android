@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">WatchFace</string>
 
     <string name="opengl_name">Sample OpenGL</string>
@@ -49,6 +49,8 @@
     <string name="color_red">Red</string>
     <string name="color_white">White</string>
     <string name="analog_complication_config">Analog Complication Config</string>
+    <string name="add_complication">Add Complication</string>
+    <string name="edit_complication">Edit Complication <xliff:g id="name" example="World Clock">%1$s</xliff:g></string>
 
     <string-array name="color_array">
         <item>@string/color_black</item>
